@@ -1,0 +1,104 @@
+export type Dict = Record<string, string>;
+export const LANGS = [
+  { code: "en", label: "English" }, { code: "hi", label: "हिन्दी" }, { code: "mr", label: "मराठी" },
+  { code: "ta", label: "தமிழ்" }, { code: "es", label: "Español" },
+] as const;
+
+const en: Dict = {
+  "nav.home": "Home", "nav.search": "Search", "nav.library": "Library", "nav.timeline": "Timeline", "nav.map": "Map",
+  "nav.collections": "Collections", "nav.uploads": "Uploads", "nav.settings": "Settings", "nav.signOut": "Sign out",
+  "auth.signIn": "Sign in", "auth.create": "Create account", "auth.email": "Email", "auth.password": "Password", "auth.name": "Your name",
+  "auth.haveAccount": "Already have an account?", "auth.noAccount": "New here?", "auth.tagline": "Find any photo, video or document by describing it.",
+  "auth.passwordHint": "At least 8 characters",
+  "home.title": "What are you looking for?", "home.placeholder": "Try “beach photos from last December” or “what does my rental agreement say about the deposit?”",
+  "home.onThisDay": "On this day", "home.recent": "Recently added", "home.saved": "Saved searches", "home.try": "Try asking",
+  "home.emptyTitle": "Your library is empty", "home.emptyBody": "Upload photos, videos or documents and search them by meaning.", "home.upload": "Upload files",
+  "search.placeholder": "Ask about your photos, videos and documents", "search.send": "Send", "search.voice": "Voice search arrives in the next release",
+  "search.results": "Results", "search.none": "Nothing matched. Try different words or remove a filter.", "search.addFilter": "Add filter",
+  "search.photos": "Photos", "search.videos": "Videos", "search.documents": "Documents", "search.from": "From", "search.to": "To", "search.place": "Place",
+  "search.apply": "Apply", "search.moreLikeThis": "More like this", "search.save": "Save search", "search.saved": "Search saved", "search.new": "New chat",
+  "search.thinking": "Searching…", "search.sources": "Sources", "search.helpful": "Helpful", "search.notHelpful": "Not helpful", "search.matches": "matches",
+  "search.empty": "Ask a question to start", "search.page": "page", "search.thanks": "Thanks for the feedback",
+  "lib.title": "Library", "lib.all": "All", "lib.select": "Select", "lib.cancel": "Cancel", "lib.addTo": "Add to collection", "lib.delete": "Delete",
+  "lib.selected": "selected", "lib.deleteConfirm": "Delete the selected items and everything derived from them? This cannot be undone.",
+  "lib.tag": "Tag", "lib.noItems": "No items match these filters.", "lib.loadMore": "Load more", "lib.undated": "Undated",
+  "tl.title": "Timeline", "tl.pick": "Select a month to see what you added or captured then.", "tl.items": "items",
+  "map.title": "Map", "map.empty": "No geotagged photos yet. Photos with location data appear here.", "map.zoom": "Zoom in to see individual photos.",
+  "col.title": "Collections", "col.new": "New collection", "col.name": "Collection name", "col.create": "Create", "col.empty": "No collections yet. Group photos and documents to find them together.",
+  "col.items": "items", "col.rename": "Rename", "col.remove": "Remove from collection", "col.searchInside": "Search in this collection", "col.deleteConfirm": "Delete this collection? The files stay in your library.",
+  "col.added": "Added to collection", "col.choose": "Choose a collection",
+  "up.title": "Uploads", "up.drop": "Drop files here", "up.browse": "or choose files", "up.zip": "Import a ZIP", "up.supported": "Photos, videos, PDF, Word, PowerPoint, Excel and text files",
+  "up.queued": "Queued", "up.processing": "Processing", "up.ready": "Ready", "up.failed": "Failed", "up.retry": "Retry", "up.duplicate": "Already in your library",
+  "up.rejected": "Not supported", "up.empty": "Nothing uploading. Drag files anywhere in the app to add them.", "up.uploading": "Uploading",
+  "doc.summary": "Summary", "doc.pages": "Pages", "doc.open": "Open original", "doc.noText": "No readable text.", "doc.page": "Page",
+  "media.caption": "Caption", "media.captionPh": "Add a description to make this easier to find", "media.tags": "Tags", "media.addTag": "Add tag", "media.taken": "Date",
+  "media.location": "Location", "media.similar": "Similar items", "media.details": "Details", "media.save": "Save changes", "media.saved": "Saved",
+  "media.reindex": "Re-process", "media.moments": "Moments", "media.transcript": "Spoken text", "media.download": "Download", "media.delete": "Delete item",
+  "set.title": "Settings", "set.profile": "Profile", "set.language": "Language", "set.timezone": "Time zone", "set.storage": "Storage", "set.export": "Export my data",
+  "set.delete": "Delete account", "set.deleteWarn": "This permanently deletes your account, files and everything derived from them.", "set.models": "Models in use",
+  "set.modelsHint": "Change these in the backend .env file, no code changes needed.", "set.reindex": "Re-process failed files", "set.name": "Display name",
+  "common.loading": "Loading…", "common.cancel": "Cancel", "common.close": "Close", "common.save": "Save", "common.delete": "Delete", "common.error": "Something went wrong",
+  "common.retry": "Try again", "common.confirm": "Confirm", "common.photos": "photos", "common.videos": "videos", "common.documents": "documents",
+};
+
+const hi: Dict = {
+  "nav.home": "होम", "nav.search": "खोज", "nav.library": "लाइब्रेरी", "nav.timeline": "समयरेखा", "nav.map": "नक्शा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्स", "nav.signOut": "साइन आउट",
+  "auth.signIn": "साइन इन", "auth.create": "खाता बनाएँ", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "आपका नाम", "auth.haveAccount": "पहले से खाता है?", "auth.noAccount": "नए हैं?", "auth.tagline": "बताकर कोई भी फ़ोटो, वीडियो या दस्तावेज़ खोजें।", "auth.passwordHint": "कम से कम 8 अक्षर",
+  "home.title": "आप क्या खोज रहे हैं?", "home.placeholder": "आज़माएँ: “पिछले दिसंबर के बीच फ़ोटो” या “किराया समझौते में जमा राशि के बारे में क्या लिखा है?”", "home.onThisDay": "आज के दिन", "home.recent": "हाल में जोड़े गए", "home.saved": "सहेजी गई खोजें", "home.try": "पूछकर देखें",
+  "home.emptyTitle": "आपकी लाइब्रेरी खाली है", "home.emptyBody": "फ़ोटो, वीडियो या दस्तावेज़ अपलोड करें और अर्थ से खोजें।", "home.upload": "फ़ाइलें अपलोड करें",
+  "search.placeholder": "अपने फ़ोटो, वीडियो और दस्तावेज़ों के बारे में पूछें", "search.send": "भेजें", "search.voice": "वॉइस खोज अगले संस्करण में आएगी", "search.results": "परिणाम", "search.none": "कुछ नहीं मिला। दूसरे शब्द आज़माएँ या कोई फ़िल्टर हटाएँ।", "search.addFilter": "फ़िल्टर जोड़ें",
+  "search.photos": "फ़ोटो", "search.videos": "वीडियो", "search.documents": "दस्तावेज़", "search.from": "से", "search.to": "तक", "search.place": "स्थान", "search.apply": "लागू करें", "search.moreLikeThis": "इसी तरह के और", "search.save": "खोज सहेजें", "search.saved": "खोज सहेजी गई", "search.new": "नई चैट",
+  "search.thinking": "खोज रहे हैं…", "search.sources": "स्रोत", "search.helpful": "उपयोगी", "search.notHelpful": "उपयोगी नहीं", "search.empty": "शुरू करने के लिए सवाल पूछें", "search.page": "पृष्ठ", "search.thanks": "प्रतिक्रिया के लिए धन्यवाद",
+  "lib.title": "लाइब्रेरी", "lib.all": "सभी", "lib.select": "चुनें", "lib.cancel": "रद्द करें", "lib.addTo": "संग्रह में जोड़ें", "lib.delete": "हटाएँ", "lib.selected": "चयनित", "lib.noItems": "इन फ़िल्टर से कुछ नहीं मिला।",
+  "tl.title": "समयरेखा", "tl.pick": "उस समय जोड़ी या खींची गई चीज़ें देखने के लिए महीना चुनें।", "map.title": "नक्शा", "map.empty": "अभी कोई स्थान-टैग वाली फ़ोटो नहीं है।",
+  "col.title": "संग्रह", "col.new": "नया संग्रह", "col.name": "संग्रह का नाम", "col.create": "बनाएँ", "col.empty": "अभी कोई संग्रह नहीं है।", "col.items": "आइटम", "col.added": "संग्रह में जोड़ा गया", "col.choose": "संग्रह चुनें",
+  "up.title": "अपलोड", "up.drop": "फ़ाइलें यहाँ छोड़ें", "up.browse": "या फ़ाइलें चुनें", "up.zip": "ZIP आयात करें", "up.queued": "कतार में", "up.processing": "प्रोसेस हो रहा है", "up.ready": "तैयार", "up.failed": "विफल", "up.retry": "फिर कोशिश करें", "up.duplicate": "पहले से लाइब्रेरी में है", "up.rejected": "समर्थित नहीं", "up.uploading": "अपलोड हो रहा है",
+  "doc.summary": "सारांश", "doc.pages": "पृष्ठ", "doc.open": "मूल खोलें", "doc.page": "पृष्ठ",
+  "media.caption": "कैप्शन", "media.tags": "टैग", "media.addTag": "टैग जोड़ें", "media.taken": "तारीख", "media.location": "स्थान", "media.similar": "मिलते-जुलते", "media.details": "विवरण", "media.save": "बदलाव सहेजें", "media.saved": "सहेजा गया", "media.delete": "आइटम हटाएँ",
+  "set.title": "सेटिंग्स", "set.profile": "प्रोफ़ाइल", "set.language": "भाषा", "set.timezone": "समय क्षेत्र", "set.storage": "स्टोरेज", "set.export": "मेरा डेटा निर्यात करें", "set.delete": "खाता हटाएँ", "set.name": "प्रदर्शित नाम",
+  "common.loading": "लोड हो रहा है…", "common.cancel": "रद्द करें", "common.close": "बंद करें", "common.save": "सहेजें", "common.delete": "हटाएँ", "common.error": "कुछ गलत हो गया", "common.retry": "फिर कोशिश करें", "common.confirm": "पुष्टि करें",
+};
+
+const mr: Dict = {
+  "nav.home": "मुख्यपृष्ठ", "nav.search": "शोध", "nav.library": "लायब्ररी", "nav.timeline": "कालरेषा", "nav.map": "नकाशा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्ज", "nav.signOut": "साइन आउट",
+  "auth.signIn": "साइन इन", "auth.create": "खाते तयार करा", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "तुमचे नाव", "auth.haveAccount": "आधीच खाते आहे?", "auth.noAccount": "नवीन आहात?", "auth.tagline": "वर्णन करून कोणताही फोटो, व्हिडिओ किंवा दस्तऐवज शोधा.",
+  "home.title": "तुम्ही काय शोधत आहात?", "home.onThisDay": "या दिवशी", "home.recent": "अलीकडे जोडलेले", "home.saved": "जतन केलेले शोध", "home.try": "विचारून पहा", "home.emptyTitle": "तुमची लायब्ररी रिकामी आहे", "home.emptyBody": "फोटो, व्हिडिओ किंवा दस्तऐवज अपलोड करा आणि अर्थाने शोधा.", "home.upload": "फाइल्स अपलोड करा",
+  "search.placeholder": "तुमच्या फोटो, व्हिडिओ आणि दस्तऐवजांबद्दल विचारा", "search.send": "पाठवा", "search.results": "निकाल", "search.none": "काहीही जुळले नाही. वेगळे शब्द वापरा किंवा फिल्टर काढा.", "search.addFilter": "फिल्टर जोडा",
+  "search.photos": "फोटो", "search.videos": "व्हिडिओ", "search.documents": "दस्तऐवज", "search.moreLikeThis": "यासारखे आणखी", "search.new": "नवीन चॅट", "search.thinking": "शोधत आहे…", "search.sources": "स्रोत", "search.helpful": "उपयुक्त", "search.notHelpful": "उपयुक्त नाही",
+  "lib.title": "लायब्ररी", "lib.all": "सर्व", "lib.select": "निवडा", "lib.delete": "हटवा", "tl.title": "कालरेषा", "map.title": "नकाशा", "col.title": "संग्रह", "col.new": "नवीन संग्रह", "col.create": "तयार करा",
+  "up.title": "अपलोड", "up.drop": "फाइल्स येथे टाका", "up.browse": "किंवा फाइल्स निवडा", "up.queued": "रांगेत", "up.processing": "प्रक्रिया सुरू", "up.ready": "तयार", "up.failed": "अयशस्वी", "up.retry": "पुन्हा प्रयत्न करा",
+  "doc.summary": "सारांश", "doc.page": "पान", "media.caption": "मथळा", "media.tags": "टॅग", "media.similar": "समान", "set.title": "सेटिंग्ज", "set.language": "भाषा", "set.delete": "खाते हटवा",
+  "common.loading": "लोड होत आहे…", "common.cancel": "रद्द करा", "common.save": "जतन करा", "common.delete": "हटवा", "common.close": "बंद करा",
+};
+
+const ta: Dict = {
+  "nav.home": "முகப்பு", "nav.search": "தேடல்", "nav.library": "நூலகம்", "nav.timeline": "காலவரிசை", "nav.map": "வரைபடம்", "nav.collections": "தொகுப்புகள்", "nav.uploads": "பதிவேற்றங்கள்", "nav.settings": "அமைப்புகள்", "nav.signOut": "வெளியேறு",
+  "auth.signIn": "உள்நுழை", "auth.create": "கணக்கை உருவாக்கு", "auth.email": "மின்னஞ்சல்", "auth.password": "கடவுச்சொல்", "auth.name": "உங்கள் பெயர்", "auth.haveAccount": "ஏற்கனவே கணக்கு உள்ளதா?", "auth.noAccount": "புதியவரா?", "auth.tagline": "விவரித்துச் சொல்லி எந்தப் புகைப்படம், காணொளி, ஆவணத்தையும் கண்டறியுங்கள்.",
+  "home.title": "எதைத் தேடுகிறீர்கள்?", "home.onThisDay": "இந்த நாளில்", "home.recent": "சமீபத்தில் சேர்த்தவை", "home.saved": "சேமித்த தேடல்கள்", "home.try": "கேட்டுப் பாருங்கள்", "home.emptyTitle": "உங்கள் நூலகம் காலியாக உள்ளது", "home.emptyBody": "புகைப்படங்கள், காணொளிகள், ஆவணங்களைப் பதிவேற்றி பொருளின் அடிப்படையில் தேடுங்கள்.", "home.upload": "கோப்புகளைப் பதிவேற்று",
+  "search.placeholder": "உங்கள் புகைப்படங்கள், காணொளிகள், ஆவணங்கள் பற்றிக் கேளுங்கள்", "search.send": "அனுப்பு", "search.results": "முடிவுகள்", "search.none": "பொருந்தும் எதுவும் இல்லை. வேறு சொற்களை முயலவும்.", "search.addFilter": "வடிகட்டியைச் சேர்",
+  "search.photos": "புகைப்படங்கள்", "search.videos": "காணொளிகள்", "search.documents": "ஆவணங்கள்", "search.moreLikeThis": "இதுபோன்றவை", "search.new": "புதிய அரட்டை", "search.thinking": "தேடுகிறது…", "search.sources": "மூலங்கள்", "search.helpful": "பயனுள்ளது", "search.notHelpful": "பயனில்லை",
+  "lib.title": "நூலகம்", "lib.all": "அனைத்தும்", "lib.select": "தேர்ந்தெடு", "lib.delete": "நீக்கு", "tl.title": "காலவரிசை", "map.title": "வரைபடம்", "col.title": "தொகுப்புகள்", "col.new": "புதிய தொகுப்பு", "col.create": "உருவாக்கு",
+  "up.title": "பதிவேற்றங்கள்", "up.drop": "கோப்புகளை இங்கே விடுங்கள்", "up.browse": "அல்லது கோப்புகளைத் தேர்ந்தெடுங்கள்", "up.queued": "வரிசையில்", "up.processing": "செயலாக்கம்", "up.ready": "தயார்", "up.failed": "தோல்வி", "up.retry": "மீண்டும் முயல்",
+  "doc.summary": "சுருக்கம்", "doc.page": "பக்கம்", "media.caption": "தலைப்பு", "media.tags": "குறிச்சொற்கள்", "media.similar": "ஒத்தவை", "set.title": "அமைப்புகள்", "set.language": "மொழி", "set.delete": "கணக்கை நீக்கு",
+  "common.loading": "ஏற்றுகிறது…", "common.cancel": "ரத்து", "common.save": "சேமி", "common.delete": "நீக்கு", "common.close": "மூடு",
+};
+
+const es: Dict = {
+  "nav.home": "Inicio", "nav.search": "Buscar", "nav.library": "Biblioteca", "nav.timeline": "Cronología", "nav.map": "Mapa", "nav.collections": "Colecciones", "nav.uploads": "Subidas", "nav.settings": "Ajustes", "nav.signOut": "Cerrar sesión",
+  "auth.signIn": "Iniciar sesión", "auth.create": "Crear cuenta", "auth.email": "Correo electrónico", "auth.password": "Contraseña", "auth.name": "Tu nombre", "auth.haveAccount": "¿Ya tienes cuenta?", "auth.noAccount": "¿Eres nuevo?", "auth.tagline": "Encuentra cualquier foto, vídeo o documento describiéndolo.", "auth.passwordHint": "Al menos 8 caracteres",
+  "home.title": "¿Qué estás buscando?", "home.placeholder": "Prueba “fotos de la playa en diciembre” o “¿qué dice mi contrato sobre el depósito?”", "home.onThisDay": "Un día como hoy", "home.recent": "Añadido recientemente", "home.saved": "Búsquedas guardadas", "home.try": "Prueba a preguntar",
+  "home.emptyTitle": "Tu biblioteca está vacía", "home.emptyBody": "Sube fotos, vídeos o documentos y búscalos por significado.", "home.upload": "Subir archivos",
+  "search.placeholder": "Pregunta sobre tus fotos, vídeos y documentos", "search.send": "Enviar", "search.voice": "La búsqueda por voz llega en la próxima versión", "search.results": "Resultados", "search.none": "No hay coincidencias. Prueba otras palabras o quita un filtro.", "search.addFilter": "Añadir filtro",
+  "search.photos": "Fotos", "search.videos": "Vídeos", "search.documents": "Documentos", "search.from": "Desde", "search.to": "Hasta", "search.place": "Lugar", "search.apply": "Aplicar", "search.moreLikeThis": "Más como esto", "search.save": "Guardar búsqueda", "search.saved": "Búsqueda guardada", "search.new": "Nuevo chat",
+  "search.thinking": "Buscando…", "search.sources": "Fuentes", "search.helpful": "Útil", "search.notHelpful": "No útil", "search.empty": "Haz una pregunta para empezar", "search.page": "página", "search.thanks": "Gracias por tu opinión",
+  "lib.title": "Biblioteca", "lib.all": "Todo", "lib.select": "Seleccionar", "lib.cancel": "Cancelar", "lib.addTo": "Añadir a colección", "lib.delete": "Eliminar", "lib.selected": "seleccionados", "lib.noItems": "Ningún elemento coincide con estos filtros.",
+  "tl.title": "Cronología", "tl.pick": "Elige un mes para ver lo que añadiste o capturaste entonces.", "map.title": "Mapa", "map.empty": "Aún no hay fotos con ubicación.",
+  "col.title": "Colecciones", "col.new": "Nueva colección", "col.name": "Nombre de la colección", "col.create": "Crear", "col.empty": "Aún no hay colecciones.", "col.items": "elementos", "col.added": "Añadido a la colección", "col.choose": "Elige una colección",
+  "up.title": "Subidas", "up.drop": "Suelta los archivos aquí", "up.browse": "o elige archivos", "up.zip": "Importar un ZIP", "up.queued": "En cola", "up.processing": "Procesando", "up.ready": "Listo", "up.failed": "Falló", "up.retry": "Reintentar", "up.duplicate": "Ya está en tu biblioteca", "up.rejected": "No compatible", "up.uploading": "Subiendo",
+  "doc.summary": "Resumen", "doc.pages": "Páginas", "doc.open": "Abrir original", "doc.page": "Página",
+  "media.caption": "Descripción", "media.tags": "Etiquetas", "media.addTag": "Añadir etiqueta", "media.taken": "Fecha", "media.location": "Ubicación", "media.similar": "Elementos similares", "media.details": "Detalles", "media.save": "Guardar cambios", "media.saved": "Guardado", "media.delete": "Eliminar elemento",
+  "set.title": "Ajustes", "set.profile": "Perfil", "set.language": "Idioma", "set.timezone": "Zona horaria", "set.storage": "Almacenamiento", "set.export": "Exportar mis datos", "set.delete": "Eliminar cuenta", "set.name": "Nombre visible",
+  "common.loading": "Cargando…", "common.cancel": "Cancelar", "common.close": "Cerrar", "common.save": "Guardar", "common.delete": "Eliminar", "common.error": "Algo salió mal", "common.retry": "Reintentar", "common.confirm": "Confirmar",
+};
+
+export const MESSAGES: Record<string, Dict> = { en, hi, mr, ta, es };
