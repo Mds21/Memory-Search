@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html, body { height: 100%; }
+body { @apply bg-paper text-ink antialiased; font-feature-settings: "cv11", "ss01"; }
+:focus-visible { outline: 2px solid theme("colors.tide.DEFAULT"); outline-offset: 2px; border-radius: 6px; }
+::selection { background: theme("colors.glow.DEFAULT"); color: theme("colors.ink.DEFAULT"); }
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-tide text-white hover:bg-tide-dark; }
+  .btn-ghost { @apply btn text-ink-soft hover:bg-paper-sunk; }
+  .btn-outline { @apply btn border border-paper-line bg-white text-ink hover:bg-paper-sunk; }
+  .btn-danger { @apply btn bg-danger text-white hover:opacity-90; }
+  .input { @apply w-full rounded-lg border border-paper-line bg-white px-3 py-2 text-sm placeholder:text-ink-faint focus:border-tide focus:outline-none focus:ring-2 focus:ring-tide-ring/40; }
+  .card { @apply rounded-xl border border-paper-line bg-paper-card; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full border border-paper-line bg-white px-2.5 py-1 text-xs font-medium text-ink-soft; }
+  .chip-on { @apply border-tide-ring bg-tide-soft text-tide-dark; }
+  .h-page { @apply text-2xl font-semibold tracking-tight; }
+}
+
+.masonry { column-gap: 12px; columns: 2; }
+@media (min-width: 640px) { .masonry { columns: 3; } }
+@media (min-width: 1100px) { .masonry { columns: 4; } }
+@media (min-width: 1500px) { .masonry { columns: 5; } }
+.masonry > * { break-inside: avoid; margin-bottom: 12px; }
+
+.skeleton { background: linear-gradient(90deg, #EDEFF3 25%, #F5F6F8 37%, #EDEFF3 63%); background-size: 400% 100%; animation: sk 1.4s ease infinite; }
+@keyframes sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } * { scroll-behavior: auto !important; } }
+
+.maplibregl-map { font-family: inherit; }
+mark.hl { background: theme("colors.glow.DEFAULT"); color: inherit; border-radius: 3px; padding: 0 2px; }

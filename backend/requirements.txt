@@ -1,0 +1,25 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+sqlalchemy>=2.0
+pydantic>=2.7
+pydantic-settings>=2.3
+python-multipart>=0.0.9
+PyJWT>=2.8
+argon2-cffi>=23.1
+httpx>=0.27
+numpy>=1.26
+Pillow>=10.3
+pypdf>=4.2
+python-docx>=1.1
+python-pptx>=0.6.23
+openpyxl>=3.1
+dateparser>=1.2
+langdetect>=1.0.9
+# --- dev / test ---
+pytest>=8.0
+reportlab>=4.0
+# --- optional, enable via .env (see README) ---
+# sentence-transformers   -> TEXT_EMBEDDER=st:BAAI/bge-m3
+# open_clip_torch         -> IMAGE_EMBEDDER=openclip
+# faster-whisper          -> STT=faster_whisper:small
+# pillow-heif             -> HEIC photo support
