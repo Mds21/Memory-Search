@@ -1,6 +1,6 @@
 # Technical Specification: Personal Memory & Document Search App
 
-**Working name:** Smriti (placeholder) | **Version:** 1.0 | **Audience:** AI coding agents and engineers
+**Working name:** Memory Search (placeholder) | **Version:** 1.0 | **Audience:** AI coding agents and engineers
 **Goal of this file:** an agent reading only this document (plus the repo it creates) can build, run, and verify the application end to end.
 **Companion:** Statement of Work (business scope, timeline, acceptance). This file is the engineering source of truth.
 
@@ -138,10 +138,10 @@ Design choice: one PostgreSQL holds relational data, vectors (pgvector HNSW), an
 ## 5. Repository Layout (create exactly this)
 
 ```
-smriti/
+Memory-Search/
   apps/
     web/                  # Next.js (app/[locale]/..., components/, lib/, hooks/, messages/{en,hi,mr,ta,es}.json)
-    api/                  # FastAPI: smriti_api/{routers,services,models,schemas,core,search,chat}, alembic/, tests/
+    api/                  # FastAPI: memory_search_api/{routers,services,models,schemas,core,search,chat}, alembic/, tests/
     worker/               # Celery: pipelines/{photo,video,document}.py, tasks.py
     models/               # Model server (FastAPI) exposing embed/rerank/ocr/stt endpoints
   packages/
@@ -159,13 +159,13 @@ smriti/
 ### 6.1 docker-compose.yml (reference; agents create and refine)
 
 ```yaml
-name: smriti
+name: memory-search
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    environment: { POSTGRES_USER: smriti, POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}, POSTGRES_DB: smriti }
+    environment: { POSTGRES_USER: memory_search, POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}, POSTGRES_DB: memory_search }
     volumes: [pgdata:/var/lib/postgresql/data, ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql]
-    healthcheck: { test: ["CMD-SHELL","pg_isready -U smriti"], interval: 5s, retries: 20 }
+    healthcheck: { test: ["CMD-SHELL","pg_isready -U memory_search"], interval: 5s, retries: 20 }
   redis:
     image: redis:7-alpine
     healthcheck: { test: ["CMD","redis-cli","ping"], interval: 5s, retries: 20 }
@@ -189,7 +189,7 @@ services:
     env_file: .env
     depends_on: { postgres: {condition: service_healthy}, redis: {condition: service_healthy}, minio: {condition: service_started} }
     ports: ["8000:8000"]
-    command: sh -c "alembic upgrade head && uvicorn smriti_api.main:app --host 0.0.0.0 --port 8000"
+    command: sh -c "alembic upgrade head && uvicorn memory_search_api.main:app --host 0.0.0.0 --port 8000"
   worker:
     build: ./apps/worker
     env_file: .env
@@ -222,11 +222,11 @@ The GPU profile adds `deploy.resources.reservations.devices` (nvidia) to `models
 
 ```
 POSTGRES_PASSWORD=change-me
-DATABASE_URL=postgresql+asyncpg://smriti:change-me@postgres:5432/smriti
+DATABASE_URL=postgresql+asyncpg://memory_search:change-me@postgres:5432/memory_search
 REDIS_URL=redis://redis:6379/0
 S3_ENDPOINT=http://minio:9000
-S3_BUCKET=smriti
-S3_ACCESS_KEY=smriti
+S3_BUCKET=memory_search
+S3_ACCESS_KEY=memory_search
 S3_SECRET_KEY=change-me-too
 JWT_SECRET=change-me-long-random
 ALLOWED_ORIGINS=http://localhost:3000

@@ -23,7 +23,7 @@ export default function PasswordGate() {
   return (
     <main className="ambient flex min-h-[100dvh] items-center justify-center px-5 py-10">
       <div className="w-full max-w-sm animate-fade-up">
-        <div className="mb-6 flex items-center gap-2"><Logo size={30} /><span className="text-lg font-semibold">Smriti</span></div>
+        <div className="mb-6 flex items-center gap-2"><Logo size={30} /><span className="text-lg font-semibold">Memory Search</span></div>
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-ink text-paper"><KeyRound className="h-6 w-6" /></div>
         <h1 className="text-2xl font-semibold tracking-tight">{t("pw.chooseTitle")}</h1>
         <p className="mt-1.5 text-sm text-ink-soft">{t("pw.chooseBody", { name: user?.username || user?.display_name || "" })}</p>

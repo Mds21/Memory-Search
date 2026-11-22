@@ -1,9 +1,9 @@
-# Smriti — personal memory & document search
+# Memory-Search — personal memory & document search
 
 Search your photos, videos and documents by describing them, in English, Hindi, Marathi, Tamil or Spanish. Ask questions about your documents and get answers with citations. Everything runs locally and offline by default; paid or heavier models plug in later through environment variables.
 
 ```
-smriti/
+Memory-Search/
 ├── backend/    FastAPI service (REST + SSE), SQLite, in-process workers   → :8000
 ├── frontend/   Next.js 14 + Tailwind UI (separate service)                → :3000
 ├── docs/       Statement of Work (.docx) and agent-readable technical spec
@@ -49,7 +49,7 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev
 Optional. The "Continue with Google" button (and One Tap) appears once a client ID is set:
 
 1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an **OAuth client ID** of type **Web application**.
-2. Under **Authorized JavaScript origins**, add every address people open Smriti from (for example `http://localhost:3000`). No redirect URI is needed.
+2. Under **Authorized JavaScript origins**, add every address people open Memory Search from (for example `http://localhost:3000`). No redirect URI is needed.
 3. Put the client ID in `backend/.env` as `GOOGLE_CLIENT_ID=…` and restart the backend.
 
 The backend checks each Google sign-in with Google: it must be meant for this app and the email must be verified. A Google account whose email matches an existing account is linked to it, so both ways of signing in open the same library.

@@ -113,7 +113,7 @@ def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
 def forgot(body: ForgotIn, request: Request, db: Session = Depends(get_db)):
     """Send a 6-digit reset code. The reply never reveals whether the account exists. Off until OTP delivery is added."""
     if not get_settings().password_reset_enabled:
-        raise HTTPException(404, "Password reset isn't available yet. Ask the owner of this Smriti for a temporary password.")
+        raise HTTPException(404, "Password reset isn't available yet. Ask the owner of this Memory Search for a temporary password.")
     ident = body.identifier.strip()
     if accounts.limited(f"forgot:{ident.lower()}", 3, 900) or accounts.limited(f"forgot-ip:{request.client.host if request.client else '?'}", 10, 900):
         raise HTTPException(429, "Too many requests. Please wait a few minutes before asking for another code.")
@@ -174,7 +174,7 @@ def verify_google_credential(credential: str) -> dict:
     """
     cid = app_settings.google_client_id()
     if not cid:
-        raise HTTPException(404, "Google sign-in isn't switched on yet. The owner of this Smriti can turn it on in Settings.")
+        raise HTTPException(404, "Google sign-in isn't switched on yet. The owner of this Memory Search can turn it on in Settings.")
     try:
         r = httpx.get("https://oauth2.googleapis.com/tokeninfo", params={"id_token": credential}, timeout=10)
     except httpx.HTTPError:
@@ -354,8 +354,8 @@ def export(u: User = Depends(current_user), db: Session = Depends(get_db)):
     }
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("smriti-export.json", json.dumps(data, indent=2, ensure_ascii=False))
-    return Response(buf.getvalue(), media_type="application/zip", headers={"Content-Disposition": 'attachment; filename="smriti-export.zip"'})
+        z.writestr("memory-search-export.json", json.dumps(data, indent=2, ensure_ascii=False))
+    return Response(buf.getvalue(), media_type="application/zip", headers={"Content-Disposition": 'attachment; filename="memory-search-export.zip"'})
 
 
 @router.delete("/me", status_code=204)

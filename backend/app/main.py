@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Smriti API", version="1.0.0", lifespan=lifespan,
+app = FastAPI(title="Memory Search API", version="1.0.0", lifespan=lifespan,
               description="Memory & document search backend. Interactive docs at /docs.")
 app.add_middleware(CORSMiddleware, allow_origins=get_settings().origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 

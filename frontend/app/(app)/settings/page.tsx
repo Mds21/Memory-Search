@@ -42,7 +42,7 @@ export default function Settings() {
   const save = async () => { try { setUser(await api.patch<User>("/me", { display_name: name, timezone: tz })); toast(t("media.saved")); } catch (e: any) { toast(e.message, "error"); } };
   const exportData = async () => {
     const r = await raw("/me/export"); const b = await r.blob(); const u = URL.createObjectURL(b);
-    const a = document.createElement("a"); a.href = u; a.download = "smriti-export.zip"; a.click(); URL.revokeObjectURL(u);
+    const a = document.createElement("a"); a.href = u; a.download = "memory-search-export.zip"; a.click(); URL.revokeObjectURL(u);
   };
   const refresh = async (all = false) => {
     try { const r = await api.post<{ queued: number }>("/admin/reindex", { only_failed: !all }); toast(t("set.refreshing", { n: r.queued })); }

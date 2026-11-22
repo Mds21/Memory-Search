@@ -54,7 +54,7 @@ export default function Home() {
       <Aurora className="h-[30rem]" />
       <header className="mx-auto max-w-2xl animate-fade-up text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-paper-line bg-paper-card/80 px-3 py-1 text-xs font-medium text-ink-soft shadow-soft backdrop-blur">
-          <Sparkles className="h-3.5 w-3.5 text-iris" />{first || "Smriti"}</span>
+          <Sparkles className="h-3.5 w-3.5 text-iris" />{first || "Memory Search"}</span>
         <h1 className="mt-3 text-balance text-[1.7rem] font-semibold leading-tight tracking-tight sm:mt-4 sm:text-5xl sm:leading-[1.1]"><BlurText key={lang} text={t("home.title")} className="gradient-words" /></h1>
         <p className="mt-3 hidden text-sm text-ink-mute sm:block">{t("home.try")}: <RotatingText key={lang} items={EXAMPLES[lang] || EXAMPLES.en} className="font-medium text-ink" /></p>
         <div className="glow-ring mt-5 rounded-2xl text-left sm:mt-7"><SearchBar large value={q} onChange={setQ} onSubmit={go} placeholder={t("home.placeholder")} autoFocus /></div>

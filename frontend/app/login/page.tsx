@@ -30,7 +30,7 @@ export default function LoginPage() {
         <div className="pointer-events-none absolute -left-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-white/[.08] blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 right-[-6rem] h-[30rem] w-[30rem] rounded-full bg-white/[.06] blur-3xl" />
         <div className="pointer-events-none absolute inset-0 opacity-[.07]" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
-        <div className="relative flex items-center gap-3"><Logo size={36} onDark /><span className="text-xl font-semibold tracking-tight">Smriti</span></div>
+        <div className="relative flex items-center gap-3"><Logo size={36} onDark /><span className="text-xl font-semibold tracking-tight">Memory Search</span></div>
         <div className="relative">
           <p className="max-w-md text-balance text-[2.6rem] font-semibold leading-[1.1] tracking-tight"><BlurText key={t("auth.tagline")} text={t("auth.tagline")} step={60} /></p>
           <ul className="mt-10 max-w-md space-y-3">
@@ -42,7 +42,7 @@ export default function LoginPage() {
       </section>
       <section className="ambient flex min-h-[100dvh] flex-col px-5 py-6 sm:px-12 sm:py-8" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
         <div className="flex items-center justify-between lg:justify-end">
-          <div className="flex items-center gap-2 lg:hidden"><Logo /><span className="font-semibold">Smriti</span></div>
+          <div className="flex items-center gap-2 lg:hidden"><Logo /><span className="font-semibold">Memory Search</span></div>
           <LanguageSwitcher />
         </div>
         <div className="m-auto w-full max-w-sm animate-fade-up">

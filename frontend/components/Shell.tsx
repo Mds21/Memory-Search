@@ -111,7 +111,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="ambient min-h-[100dvh] lg:grid lg:grid-cols-[248px_1fr]">
       <aside className="hidden border-r border-paper-line/70 bg-paper-card/60 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
-        <Link href="/" className="flex items-center gap-2.5 px-5 pb-4 pt-5"><Logo size={30} /><span className="text-[17px] font-semibold tracking-tight">Smriti</span></Link>
+        <Link href="/" className="flex items-center gap-2.5 px-5 pb-4 pt-5"><Logo size={30} /><span className="text-[17px] font-semibold tracking-tight">Memory Search</span></Link>
         <nav className="flex-1 space-y-0.5 px-3" aria-label="Main">
           {NAV.map(({ href, key, icon: Icon }) => {
             const on = active(href);
@@ -143,7 +143,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </>) : section ? (
             <span className="px-2 text-lg font-semibold tracking-tight">{t(TITLES[section])}</span>
           ) : (
-            <Link href="/" className="flex items-center gap-2 px-2"><Logo size={26} /><span className="font-semibold tracking-tight">Smriti</span></Link>
+            <Link href="/" className="flex items-center gap-2 px-2"><Logo size={26} /><span className="font-semibold tracking-tight">Memory Search</span></Link>
           )}
           <div className="ml-auto flex items-center">
             {path !== "/search" && <Link href="/search" className="tap btn-ghost !p-2.5" aria-label={t("nav.search")}><Search className="h-5 w-5" /></Link>}
@@ -232,7 +232,7 @@ function ShellSkeleton() {
   return (
     <div className="ambient min-h-[100dvh] lg:grid lg:grid-cols-[248px_1fr]" aria-busy>
       <aside className="hidden border-r border-paper-line/70 bg-paper-card/60 p-5 lg:block">
-        <div className="mb-6 flex items-center gap-2.5"><Logo size={30} /><span className="text-[17px] font-semibold tracking-tight">Smriti</span></div>
+        <div className="mb-6 flex items-center gap-2.5"><Logo size={30} /><span className="text-[17px] font-semibold tracking-tight">Memory Search</span></div>
         <div className="space-y-2">{Array.from({ length: 7 }, (_, i) => <div key={i} className="skeleton h-8 rounded-xl" />)}</div>
       </aside>
       <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6"><div className="skeleton mx-auto h-10 max-w-md rounded-xl" /><div className="skeleton mx-auto mt-6 h-14 max-w-2xl rounded-2xl" /></div>

@@ -30,7 +30,7 @@ export async function raw(path: string, init: RequestInit = {}, retry = true): P
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   let res: Response;
   try { res = await fetch(API + path, { ...init, headers }); }
-  catch (e: any) { if (e?.name === "AbortError") throw e; throw new ApiError(0, "Can't reach Smriti right now. Check that it's running and try again."); }
+  catch (e: any) { if (e?.name === "AbortError") throw e; throw new ApiError(0, "Can't reach Memory Search right now. Check that it's running and try again."); }
   if (res.status === 401 && retry && (await refresh())) return raw(path, init, false);
   return res;
 }
@@ -71,7 +71,7 @@ export const api = {
           try { const d = JSON.parse(xhr.responseText).detail; msg = typeof d === "string" ? d : "This upload couldn't be accepted."; } catch { /* ignore */ }
           reject(new ApiError(xhr.status, String(msg)));
         };
-        xhr.onerror = () => reject(new ApiError(0, "Can't reach Smriti right now. Check that it's running and try again."));
+        xhr.onerror = () => reject(new ApiError(0, "Can't reach Memory Search right now. Check that it's running and try again."));
         xhr.send(fd);
       };
       send(true);

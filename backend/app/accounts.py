@@ -150,9 +150,9 @@ def issue_reset(db: Session, u: User, via: str) -> tuple[str, str | None]:
     code = f"{secrets.randbelow(10**6):06d}"
     db.add(PasswordReset(user_id=u.id, code_hash=_hash_code(code), expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)))
     db.commit()
-    text = f"Your Smriti password reset code is {code}. It expires in 15 minutes. If you didn't ask for this, ignore this message."
+    text = f"Your Memory Search password reset code is {code}. It expires in 15 minutes. If you didn't ask for this, ignore this message."
     email, phone = real_email(u), u.phone
-    if email and send_email(email, "Your Smriti reset code", text):
+    if email and send_email(email, "Your Memory Search reset code", text):
         return "email", mask(email)
     # No mail service configured (text-message OTP comes later): the owner can read the code from the log.
     log.warning("PASSWORD RESET CODE for %s: %s (no email service configured; set SMTP_* in .env)",
@@ -198,7 +198,7 @@ def ensure_admin_account() -> None:
                     display_name="Administrator", is_admin=True, must_change_password=True))
         db.commit()
         path = s.data_path / "admin-credentials.txt"
-        path.write_text(f"Smriti administrator\nusername: {s.admin_username}\none-time password: {pw}\n\n"
+        path.write_text(f"Memory Search administrator\nusername: {s.admin_username}\none-time password: {pw}\n\n"
                         "Sign in with these, then choose your own password (you'll be asked straight away).\n"
                         "This file is deleted automatically once you do.\n", encoding="utf-8")
         log.warning("Created the '%s' account. Its one-time password is in %s", s.admin_username, path.resolve())

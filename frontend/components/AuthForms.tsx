@@ -11,7 +11,7 @@ export type Mode = "in" | "up" | "forgot" | "reset";
 async function post(path: string, body: object) {
   let res: Response;
   try { res = await fetch(`${API}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
-  catch { throw new Error("Can't reach Smriti right now. Check that it's running and try again."); }
+  catch { throw new Error("Can't reach Memory Search right now. Check that it's running and try again."); }
   const d = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Please check what you entered and try again.");
   return d;
