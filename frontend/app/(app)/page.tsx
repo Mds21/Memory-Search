@@ -44,7 +44,7 @@ export default function Home() {
   const recent = useApi<{ items: Asset[]; total: number }>("/assets?limit=12", tick);
   const otd = useApi<{ items: Asset[] }>("/on-this-day").data?.items ?? NONE;
   const saved = useApi<{ items: SavedSearch[] }>("/saved-searches").data?.items ?? [];
-  const go = (v: string) => router.push(`/search?q=${encodeURIComponent(v)}`);
+  const go = (v: string) => { window.dispatchEvent(new CustomEvent("ms:navstart", { detail: "/search" })); router.push(`/search?q=${encodeURIComponent(v)}`); };
   const items = recent.data?.items;
   const viewer = useViewer([...otd, ...(items || [])]);
   const first = user?.display_name?.split(" ")[0];

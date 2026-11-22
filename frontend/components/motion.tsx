@@ -8,12 +8,16 @@ import { useEffect, useRef, useState } from "react";
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-/** Words fade up from a blur one after another. */
+const played = new Set<string>();  // intro animations run once per visit, so coming back to a page is instant
+
+/** Words fade up from a blur one after another (the first time this text is shown). */
 export function BlurText({ text, className = "", step = 70 }: { text: string; className?: string; step?: number }) {
+  const [still] = useState(() => played.has(text));
+  useEffect(() => { played.add(text); }, [text]);
   return (
     <span className={className} aria-label={text}>
       {text.split(" ").map((w, i) => (
-        <span key={`${w}-${i}`} aria-hidden className="blur-word" style={{ animationDelay: `${i * step}ms` }}>{w}{" "}</span>
+        <span key={`${w}-${i}`} aria-hidden className={`blur-word${still ? " still" : ""}`} style={still ? undefined : { animationDelay: `${i * step}ms` }}>{w}{" "}</span>
       ))}
     </span>
   );
@@ -36,12 +40,16 @@ export function RotatingText({ items, interval = 2600, className = "" }: { items
 }
 
 /** Animated number that counts up to `to` when it first scrolls into view. */
-export function CountUp({ to, duration = 900, className = "" }: { to: number; duration?: number; className?: string }) {
-  const [v, setV] = useState(0);
+const lastCount = new Map<string, number>();
+
+export function CountUp({ to, id, duration = 900, className = "" }: { to: number; id?: string; duration?: number; className?: string }) {
+  const seen = id != null ? lastCount.get(id) : undefined;
+  const [v, setV] = useState(seen ?? 0);
   const el = useRef<HTMLSpanElement>(null);
-  const from = useRef(0);
+  const from = useRef(seen ?? 0);
   useEffect(() => {
-    if (reduced()) { setV(to); return; }
+    if (id != null) lastCount.set(id, to);
+    if (reduced() || from.current === to) { setV(to); return; }
     let raf = 0;
     const start = from.current;
     const run = () => {
@@ -60,7 +68,7 @@ export function CountUp({ to, duration = 900, className = "" }: { to: number; du
     const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { run(); io.disconnect(); } });
     io.observe(node);
     return () => { io.disconnect(); cancelAnimationFrame(raf); };
-  }, [to, duration]);
+  }, [to, id, duration]);
   return <span ref={el} className={`tabular-nums ${className}`}>{v.toLocaleString()}</span>;
 }
 

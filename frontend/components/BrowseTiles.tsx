@@ -30,7 +30,7 @@ export default function BrowseTiles() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-ink text-paper shadow-soft transition-all group-hover:scale-105 group-hover:text-iris-soft group-hover:bg-iris"><Icon className="h-[18px] w-[18px]" /></span>
           <span className="min-w-0">
             <span className="block truncate text-[13px] font-semibold leading-tight">{label}</span>
-            <span className="block text-[11px] tabular-nums text-ink-mute">{count != null ? <CountUp to={count} /> : " "}</span>
+            <span className="block text-[11px] tabular-nums text-ink-mute">{count != null ? <CountUp to={count} id={href} /> : " "}</span>
           </span>
         </Link>
         </Spotlight>))}

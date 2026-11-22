@@ -66,9 +66,36 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [add, setAdd] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
+  // Instant feedback on navigation: the tapped tab lights up and a progress bar runs until the new page is in.
+  const [pending, setPending] = useState<string | null>(null);
+  const [finishing, setFinishing] = useState(false);
+  const pendingRef = useRef<string | null>(null);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [loading, user, router]);
-  useEffect(() => { setMore(false); setAdd(false); }, [path]);
+  useEffect(() => {
+    setMore(false); setAdd(false);
+    if (pendingRef.current) { setFinishing(true); setTimeout(() => setFinishing(false), 380); }
+    pendingRef.current = null; setPending(null);
+  }, [path]);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const start = (to: string) => {
+      pendingRef.current = to; setPending(to); clearTimeout(timer);
+      timer = setTimeout(() => { pendingRef.current = null; setPending(null); }, 12000);  // never leave a stuck bar
+    };
+    const click = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a");
+      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      const u = new URL(a.href, location.href);
+      if (u.origin !== location.origin || (u.pathname === location.pathname && u.search === location.search)) return;
+      start(u.pathname);
+    };
+    const manual = (e: Event) => start((e as CustomEvent<string>).detail || "");
+    document.addEventListener("click", click, true);
+    window.addEventListener("ms:navstart", manual);
+    return () => { document.removeEventListener("click", click, true); window.removeEventListener("ms:navstart", manual); clearTimeout(timer); };
+  }, []);
 
   // Warm every section's code once the browser is idle, so switching tabs is instant.
   useEffect(() => {
@@ -94,7 +121,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   if (loading || !user) return <ShellSkeleton />;
   if (user.must_change_password) return <PasswordGate />;
-  const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  const cur = pending || path;
+  const active = (href: string) => (href === "/" ? cur === "/" : cur.startsWith(href));
   const warm = (href: string) => () => SECTION_DATA[href]?.forEach(prefetch);
   const who = user.display_name || user.email || user.phone || user.username || "Me";
   const contact = user.email || user.phone || (user.username ? `@${user.username}` : "");
@@ -110,7 +138,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="ambient min-h-[100dvh] lg:grid lg:grid-cols-[248px_1fr]">
-      <aside className="hidden border-r border-paper-line/70 bg-paper-card/60 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
+      {(pending || finishing) && <div key={pending ? "run" : "done"} className={`route-bar ${pending ? "run" : "done"}`} aria-hidden />}
+      <aside className="hidden border-r border-paper-line/70 bg-paper-card lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
         <Link href="/" className="flex items-center gap-2.5 px-5 pb-4 pt-5"><Logo size={30} /><span className="text-[17px] font-semibold tracking-tight">Memory Search</span></Link>
         <nav className="flex-1 space-y-0.5 px-3" aria-label="Main">
           {NAV.map(({ href, key, icon: Icon }) => {
@@ -150,7 +179,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <button onClick={() => setMore(true)} className="tap ml-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-tide to-iris text-xs font-semibold text-paper" aria-label={t("nav.more")}>{initials}</button>
           </div>
         </header>
-        <main key={path} className="min-w-0 flex-1 animate-fade-in">{children}</main>
+        <main key={path} className="page-enter min-w-0 flex-1">{children}</main>
       </div>
 
       {/* phone tab bar: the four places people go most, plus a big "add" in the middle */}
@@ -231,7 +260,7 @@ function Tab({ href, icon: Icon, label, on, warm }: { href: string; icon: typeof
 function ShellSkeleton() {
   return (
     <div className="ambient min-h-[100dvh] lg:grid lg:grid-cols-[248px_1fr]" aria-busy>
-      <aside className="hidden border-r border-paper-line/70 bg-paper-card/60 p-5 lg:block">
+      <aside className="hidden border-r border-paper-line/70 bg-paper-card p-5 lg:block">
         <div className="mb-6 flex items-center gap-2.5"><Logo size={30} /><span className="text-[17px] font-semibold tracking-tight">Memory Search</span></div>
         <div className="space-y-2">{Array.from({ length: 7 }, (_, i) => <div key={i} className="skeleton h-8 rounded-xl" />)}</div>
       </aside>
