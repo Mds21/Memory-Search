@@ -9,7 +9,7 @@ export function highlight(text: string, terms: string[]): React.ReactNode {
 }
 export const termsOf = (q?: string) => (q || "").toLowerCase().split(/[\s,.;:?!]+/).filter((w) => w.length > 2);
 
-export const emptyFilters = (): Filters => ({ kinds: [], date_from: null, date_to: null, place: null, tags: [], language: null, collection_id: null });
+export const emptyFilters = (): Filters => ({ kinds: [], date_from: null, date_to: null, place: null, tags: [], language: null, collection_id: null, doc_types: [], person: null, self_ref: false });
 export const emptyParsed = (raw = ""): Parsed => ({ raw, language: null, intent: "mixed", semantic_query: "", semantic_query_en: null, filters: emptyFilters(), followup: false });
 
 export function dateChipLabel(f: Filters, lang: string): string | null {

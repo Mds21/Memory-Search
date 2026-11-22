@@ -40,3 +40,28 @@ def get_db():
 def init_db():
     from . import models  # noqa: F401
     Base.metadata.create_all(engine)
+    _add_missing_columns()
+    from sqlalchemy import text
+    with engine.begin() as conn:  # one account per phone number / username (NULLs allowed)
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ux_users_phone ON users (phone)"))
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ux_users_username ON users (username)"))
+
+
+def _add_missing_columns():
+    """Tiny forward-only migration: add columns introduced after a database was created (create_all never alters tables)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(engine)
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if not insp.has_table(table.name):
+                continue
+            have = {c["name"] for c in insp.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in have:
+                    continue
+                ddl = col.type.compile(dialect=engine.dialect)
+                default = ""
+                if col.default is not None and getattr(col.default, "is_scalar", False):
+                    v = col.default.arg
+                    default = f" DEFAULT {int(v) if isinstance(v, bool) else repr(v)}"
+                conn.execute(text(f'ALTER TABLE {table.name} ADD COLUMN {col.name} {ddl}{default}'))

@@ -44,6 +44,26 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev
 | Account | JWT auth, per-user isolation, data export, full account deletion |
 | UI | Responsive, keyboard friendly (`/` focuses search, arrows and Esc in the viewer), 5 UI languages. Voice button is present but disabled (Phase 2) |
 
+## Sign in with Google
+
+Optional. The "Continue with Google" button (and One Tap) appears once a client ID is set:
+
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an **OAuth client ID** of type **Web application**.
+2. Under **Authorized JavaScript origins**, add every address people open Smriti from (for example `http://localhost:3000`). No redirect URI is needed.
+3. Put the client ID in `backend/.env` as `GOOGLE_CLIENT_ID=…` and restart the backend.
+
+The backend checks each Google sign-in with Google: it must be meant for this app and the email must be verified. A Google account whose email matches an existing account is linked to it, so both ways of signing in open the same library.
+
+## Asking for a specific file
+
+Requests like "share my pan card", "rahul's abha card", "मेरा आधार कार्ड भेजो" or "share the beach photo I took in Goa" return that file with Share / Download buttons and an honest note on anything that could not be confirmed (an unreadable name, a photo without location data).
+
+- **What a file is** comes from `backend/app/understanding/doc_types.py`: a data registry (PAN, Aadhaar, ABHA, voter ID, passport, driving licence, invoices, tickets, certificates, signature, ...) scored from OCR text, ID-number patterns (Aadhaar checksum included), filename words and visual cues. Add types there, or list extra ones in a JSON file and set `DOC_TYPES_FILE`.
+- **Whose it is** comes from the name printed on the card (`entities.py`); "my ..." prefers files that carry your display name.
+- **Visual cues** (`visual.py`) recognise signatures and scenes such as beach/sea, greenery, snow and sunset offline.
+- **File formats** are detected from content, so `.jfif`, WebP saved as `.jpeg`, HEIC, AVIF and the like all work.
+- OCR needs Tesseract. On Windows, `winget install UB-Mannheim.TesseractOCR` works as is; it's found in Program Files automatically (or set `TESSERACT_CMD`). After upgrading, use **Settings → Reprocess all files**.
+
 ## Swapping in better models (no code changes)
 
 Edit `backend/.env`, then restart. Re-process files from Settings to re-embed with a new model.

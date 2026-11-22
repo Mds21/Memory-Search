@@ -30,6 +30,13 @@ class User(Base, Timestamped):
     language: Mapped[str] = mapped_column(String(8), default="en")
     timezone: Mapped[str] = mapped_column(String(64), default="Asia/Kolkata")
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    google_sub: Mapped[str | None] = mapped_column(String(64), index=True)  # Google account id, once linked
+    password_set: Mapped[bool] = mapped_column(Boolean, default=True)       # False for accounts created through Google
+    username: Mapped[str | None] = mapped_column(String(40), index=True)    # optional sign-in name ("admin")
+    phone: Mapped[str | None] = mapped_column(String(20), index=True)       # E.164, e.g. +919876543210
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
+    pw_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    token_version: Mapped[int] = mapped_column(Integer, default=0)  # bumped on password change: older sessions stop working
 
 
 class Asset(Base, Timestamped):
@@ -57,6 +64,16 @@ class Asset(Base, Timestamped):
     has_thumb: Mapped[bool] = mapped_column(Boolean, default=False)
     has_proxy: Mapped[bool] = mapped_column(Boolean, default=False)
     meta: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    @property
+    def ext(self) -> str:
+        """Real format's extension (from content sniffing); falls back to the uploaded name's extension."""
+        from pathlib import Path
+        return (self.meta or {}).get("ext") or Path(self.filename).suffix.lower()
+
+    @property
+    def original_key(self) -> str:
+        return f"{self.owner_id}/{self.id}/original{self.ext}"
 
     chunks = relationship("Chunk", cascade="all, delete-orphan", passive_deletes=True)
     tags = relationship("AssetTag", cascade="all, delete-orphan", passive_deletes=True)
@@ -115,11 +132,23 @@ class CollectionItem(Base):
     position: Mapped[int] = mapped_column(Integer, default=0)
 
 
+class PasswordReset(Base):
+    __tablename__ = "password_resets"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_id)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    used: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class Conversation(Base, Timestamped):
     __tablename__ = "conversations"
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_id)
     owner_id: Mapped[str] = mapped_column(String(32), index=True)
     title: Mapped[str | None] = mapped_column(String(200))
+    pinned: Mapped[bool] = mapped_column(Boolean, default=False)  # pinned chats are never cleaned up
     messages = relationship("Message", cascade="all, delete-orphan", passive_deletes=True, order_by="Message.created_at")
 
 
@@ -134,6 +163,7 @@ class Message(Base):
     parsed_query: Mapped[dict | None] = mapped_column(JSON)
     result_asset_ids: Mapped[list | None] = mapped_column(JSON)
     citations: Mapped[list | None] = mapped_column(JSON)
+    primary_ids: Mapped[list | None] = mapped_column(JSON)  # the file(s) handed over in this reply ("share my pan card")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 

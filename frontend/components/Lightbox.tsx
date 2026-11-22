@@ -1,10 +1,12 @@
 "use client";
-import { ChevronLeft, ChevronRight, ExternalLink, X, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Share2, X, ZoomIn } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { abs, api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Asset } from "@/lib/types";
+import { shareAsset } from "@/lib/share";
+import { useUploads } from "@/lib/uploads";
 import { fmtDate } from "./ui";
 
 /** Full-screen viewer for photos and videos: arrows/swipe to navigate, click or +/- to zoom, Esc to close. */
@@ -13,7 +15,13 @@ export default function Lightbox({ items, index, onIndex, onClose }: { items: As
   const cur = items[index];
   const [full, setFull] = useState<Asset | null>(null);
   const [zoom, setZoom] = useState(false);
-  const touch = useRef<number | null>(null);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const lastTap = useRef(0);
+  const [drag, setDrag] = useState(0);
+  const { toast } = useUploads();
+  const share = async () => {
+    try { if ((await shareAsset(cur)) === "copied") toast(t("share.copied")); } catch { toast(t("share.failed"), "error"); }
+  };
 
   useEffect(() => {
     setZoom(false); setFull(null);
@@ -35,26 +43,36 @@ export default function Lightbox({ items, index, onIndex, onClose }: { items: As
   const src = abs(a.kind === "photo" ? a.original_url || a.preview_url || a.thumb_url : a.preview_url);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-ink/95 text-white" role="dialog" aria-modal aria-label={a.title}
-      onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
-      onTouchEnd={(e) => { if (touch.current == null || zoom) return; const dx = e.changedTouches[0].clientX - touch.current; if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1); touch.current = null; }}>
+    <div className="fixed inset-0 z-50 flex flex-col text-white"  role="dialog" aria-modal aria-label={a.title}
+      style={{ backgroundColor: `rgb(11 15 23 / ${Math.max(0.5, 0.95 - drag / 600)})` }}
+      onTouchStart={(e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+      onTouchMove={(e) => { if (!touch.current || zoom) return; const dy = e.touches[0].clientY - touch.current.y; if (dy > 0 && Math.abs(dy) > Math.abs(e.touches[0].clientX - touch.current.x)) setDrag(dy); }}
+      onTouchEnd={(e) => {
+        if (!touch.current || zoom) { touch.current = null; return; }
+        const dx = e.changedTouches[0].clientX - touch.current.x, dy = e.changedTouches[0].clientY - touch.current.y;
+        touch.current = null; setDrag(0);
+        if (dy > 110 && Math.abs(dx) < 80) return onClose();  // swipe down to close
+        if (Math.abs(dx) > 60 && Math.abs(dy) < 80) go(dx < 0 ? 1 : -1);
+      }}>
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="min-w-0"><p className="truncate text-sm font-medium">{a.caption_user || a.title}</p>
+        <div className="min-w-0"><p className="truncate text-sm font-medium">{a.display_title || a.title}</p>
           <p className="truncate text-xs text-white/60">{[fmtDate(a.taken_at, lang), a.place].filter(Boolean).join(" • ")}</p></div>
         <div className="flex items-center gap-1">
-          {a.kind === "photo" && <button className="btn-ghost !text-white hover:!bg-white/10" onClick={() => setZoom((z) => !z)} aria-label="Zoom"><ZoomIn className="h-4 w-4" /></button>}
+          <button className="btn-ghost tap !p-2.5 !text-white hover:!bg-white/10" onClick={share} aria-label={t("share.share")}><Share2 className="h-[18px] w-[18px]" /></button>
+          {a.kind === "photo" && <button className="btn-ghost tap !p-2.5 !text-white hover:!bg-white/10 max-sm:hidden" onClick={() => setZoom((z) => !z)} aria-label="Zoom"><ZoomIn className="h-4 w-4" /></button>}
           <Link href={`/media/${a.asset_id}`} className="btn-ghost !text-white hover:!bg-white/10" onClick={onClose}><ExternalLink className="h-4 w-4" /><span className="hidden sm:inline">{t("media.details")}</span></Link>
           <button className="btn-ghost !text-white hover:!bg-white/10" onClick={onClose} aria-label={t("common.close")}><X className="h-5 w-5" /></button>
         </div>
       </div>
       <div className="relative flex min-h-0 flex-1 items-center justify-center" onClick={(e) => e.target === e.currentTarget && onClose()}>
-        {index > 0 && <button onClick={() => go(-1)} aria-label="Previous" className="absolute left-2 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20"><ChevronLeft className="h-6 w-6" /></button>}
+        {index > 0 && <button onClick={() => go(-1)} aria-label="Previous" className="absolute left-2 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20 max-sm:hidden"><ChevronLeft className="h-6 w-6" /></button>}
         {a.kind === "video" && full?.video_url
           ? <video key={a.asset_id} src={abs(full.video_url)} poster={abs(a.preview_url)} controls autoPlay className="max-h-full max-w-full" />
           : <div className={`h-full w-full ${zoom ? "overflow-auto" : "flex items-center justify-center"}`}>
-              <img key={a.asset_id} src={src} alt={a.caption_user || a.title} onClick={() => setZoom((z) => !z)}
-                className={zoom ? "max-w-none cursor-zoom-out" : "max-h-full max-w-full cursor-zoom-in object-contain"} style={zoom ? { width: "180%" } : undefined} /></div>}
-        {index < items.length - 1 && <button onClick={() => go(1)} aria-label="Next" className="absolute right-2 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20"><ChevronRight className="h-6 w-6" /></button>}
+              <img key={a.asset_id} src={src} alt={a.display_title || a.title} style={zoom ? { width: "180%" } : drag ? { transform: `translateY(${drag}px) scale(${1 - drag / 2000})` } : undefined}
+                onClick={() => { const now = Date.now(); if (window.matchMedia("(pointer: coarse)").matches) { if (now - lastTap.current < 300) setZoom((z) => !z); lastTap.current = now; } else setZoom((z) => !z); }}
+                className={`transition-transform duration-75 ${zoom ? "max-w-none cursor-zoom-out" : "max-h-full max-w-full cursor-zoom-in object-contain"}`} /></div>}
+        {index < items.length - 1 && <button onClick={() => go(1)} aria-label="Next" className="absolute right-2 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20 max-sm:hidden"><ChevronRight className="h-6 w-6" /></button>}
       </div>
       {a.tags.length > 0 && <div className="flex flex-wrap gap-1.5 px-4 py-3">{a.tags.slice(0, 10).map((x) => <span key={x} className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs">{x}</span>)}</div>}
     </div>

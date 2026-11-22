@@ -17,6 +17,7 @@ class ImageDescription:
     tags: list[str] = field(default_factory=list)
     objects: list[str] = field(default_factory=list)
     visible_text: str | None = None
+    cues: dict = field(default_factory=dict)  # visual cue scores (signature, beach, document, ...)
 
 
 @dataclass

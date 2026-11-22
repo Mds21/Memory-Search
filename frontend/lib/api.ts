@@ -28,7 +28,9 @@ export async function raw(path: string, init: RequestInit = {}, retry = true): P
   const t = tokens.get();
   if (t) headers.set("Authorization", `Bearer ${t.access_token}`);
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-  const res = await fetch(API + path, { ...init, headers });
+  let res: Response;
+  try { res = await fetch(API + path, { ...init, headers }); }
+  catch (e: any) { if (e?.name === "AbortError") throw e; throw new ApiError(0, "Can't reach Smriti right now. Check that it's running and try again."); }
   if (res.status === 401 && retry && (await refresh())) return raw(path, init, false);
   return res;
 }
@@ -37,7 +39,8 @@ async function json<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await raw(path, init);
   if (!res.ok) {
     let msg = res.statusText;
-    try { const d = await res.json(); msg = typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail); } catch { /* not json */ }
+    try { const d = await res.json(); msg = typeof d.detail === "string" ? d.detail : "Please check what you entered and try again."; } catch { /* not json */ }
+    if (res.status >= 500) msg = "Something went wrong on our side. Please try again.";
     if (res.status === 401) { tokens.set(null); if (typeof window !== "undefined" && !location.pathname.startsWith("/login")) location.href = "/login"; }
     throw new ApiError(res.status, msg);
   }
@@ -48,6 +51,7 @@ export const api = {
   get: <T,>(p: string) => json<T>(p),
   post: <T,>(p: string, body?: unknown) => json<T>(p, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) }),
   patch: <T,>(p: string, body: unknown) => json<T>(p, { method: "PATCH", body: JSON.stringify(body) }),
+  put: <T,>(p: string, body: unknown) => json<T>(p, { method: "PUT", body: JSON.stringify(body) }),
   del: <T = void,>(p: string) => json<T>(p, { method: "DELETE" }),
   upload(path: string, files: File[], onProgress?: (pct: number) => void): Promise<{ items: any[] }> {
     return new Promise((resolve, reject) => {
@@ -64,10 +68,10 @@ export const api = {
           if (xhr.status === 401 && retry && (await refresh())) return send(false);
           if (xhr.status >= 200 && xhr.status < 300) return resolve(JSON.parse(xhr.responseText));
           let msg = xhr.statusText;
-          try { msg = JSON.parse(xhr.responseText).detail || msg; } catch { /* ignore */ }
+          try { const d = JSON.parse(xhr.responseText).detail; msg = typeof d === "string" ? d : "This upload couldn't be accepted."; } catch { /* ignore */ }
           reject(new ApiError(xhr.status, String(msg)));
         };
-        xhr.onerror = () => reject(new ApiError(0, "Cannot reach the server"));
+        xhr.onerror = () => reject(new ApiError(0, "Can't reach Smriti right now. Check that it's running and try again."));
         xhr.send(fd);
       };
       send(true);
@@ -79,14 +83,14 @@ export interface StreamHandlers {
   parsed?: (d: { parsed: Parsed; conversation_id: string }) => void;
   results?: (d: { results: any[]; total: number; took_ms: number }) => void;
   token?: (text: string) => void;
-  done?: (d: { message_id: string; conversation_id: string; citations: any[] }) => void;
+  done?: (d: { message_id: string; conversation_id: string; citations: any[]; primary?: string[] }) => void;
   error?: (message: string) => void;
 }
 
 /** POST /chat and read the Server-Sent Events stream (EventSource cannot POST). */
 export async function chatStream(body: object, h: StreamHandlers, signal?: AbortSignal) {
   const res = await raw("/chat", { method: "POST", body: JSON.stringify(body), signal });
-  if (!res.ok || !res.body) { h.error?.(`Request failed (${res.status})`); return; }
+  if (!res.ok || !res.body) { h.error?.("Something went wrong while searching. Please try again."); return; }
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = "";

@@ -1,7 +1,10 @@
 "use client";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, ExternalLink, Sparkles } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { TypeBadge } from "@/components/AssetTile";
+import FileFacts from "@/components/FileFacts";
+import { ShareActions } from "@/components/ShareCard";
 import { Spinner, fmtBytes } from "@/components/ui";
 import { abs, api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
@@ -32,18 +35,25 @@ function DocView() {
   body.forEach((c) => { const p = c.page ?? 1; pages.set(p, [...(pages.get(p) || []), c.content]); });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      <button className="btn-ghost mb-3 -ml-2" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" />{t("common.close")}</button>
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+      <button className="btn-ghost mb-3 -ml-2 max-lg:hidden" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" />{t("common.close")}</button>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0"><h1 className="h-page truncate">{a.title}</h1><p className="text-sm text-ink-mute">{[a.page_count ? `${a.page_count} ${t("doc.pages").toLowerCase()}` : null, a.size_bytes ? fmtBytes(a.size_bytes) : null, a.language].filter(Boolean).join(" • ")}</p></div>
-        <a className="btn-outline" href={abs(a.original_url)} target="_blank" rel="noreferrer"><Download className="h-4 w-4" />{t("doc.open")}</a>
+        <div className="min-w-0">
+          <div className="mb-1 flex items-center gap-2"><TypeBadge type={a.file_type} /><span className="truncate text-xs text-ink-mute">{a.title}</span></div>
+          <h1 className="h-page line-clamp-2">{a.display_title || a.title}</h1>
+          <p className="text-sm text-ink-mute">{[a.doc_label, a.page_count ? `${a.page_count} ${t("doc.pages").toLowerCase()}` : null, a.size_bytes ? fmtBytes(a.size_bytes) : null].filter(Boolean).join(" • ")}</p>
+          {a.auto_caption && <p className="mt-2 flex max-w-2xl gap-1.5 text-sm text-ink-soft"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-iris" />{a.auto_caption}</p>}
+        </div>
+        <div className="flex flex-wrap gap-2"><ShareActions asset={a} size="md" />
+          <a className="btn-ghost tap" href={abs(a.original_url)} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" />{t("doc.open")}</a></div>
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="card min-h-[60vh] overflow-hidden">
-          {isPdf ? <iframe key={page} title={a.title} src={`${abs(a.original_url)}#page=${page}`} className="h-[75vh] w-full" />
+          {isPdf ? <iframe key={page} title={a.title} src={`${abs(a.original_url)}#page=${page}`} className="h-[60dvh] w-full lg:h-[75vh]" />
             : a.thumb_url ? <img src={abs(a.preview_url || a.thumb_url)} alt={a.title} className="w-full" /> : null}
         </div>
-        <div className="max-h-[75vh] space-y-4 overflow-y-auto">
+        <div className="space-y-4 lg:max-h-[75vh] lg:overflow-y-auto">
+          <FileFacts asset={a} />
           {summary && <div className="card border-tide-ring bg-tide-soft p-4"><h2 className="mb-1 text-sm font-semibold text-tide-dark">{t("doc.summary")}</h2><p className="text-sm leading-relaxed">{summary.content}</p></div>}
           {pages.size === 0 && <p className="text-sm text-ink-mute">{t("doc.noText")}</p>}
           {[...pages.entries()].map(([p, texts]) => (

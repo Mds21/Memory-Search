@@ -179,4 +179,4 @@ def admin_reindex(body: ReindexIn, user: User = Depends(admin_user), db: Session
 @router.get("/me/storage", tags=["me"])
 def my_storage(user: User = Depends(current_user), db: Session = Depends(get_db)):
     rows = db.query(Asset.kind, func.count(Asset.id), func.coalesce(func.sum(Asset.size_bytes), 0)).filter_by(owner_id=user.id).group_by(Asset.kind).all()
-    return {"items": [{"kind": k, "count": c, "bytes": int(b)} for k, c, b in rows], "adapters": registry.describe_adapters()}
+    return {"items": [{"kind": k, "count": c, "bytes": int(b)} for k, c, b in rows]}  # model setup is admin-only (/admin/stats)

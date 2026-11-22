@@ -55,6 +55,7 @@ def add_image_chunk(db: Session, asset: Asset, image_bytes: bytes, chunk_type: s
 
 
 def upsert_tags(db: Session, asset: Asset, names: list[str], source: str = "auto") -> None:
+    db.flush()  # sessions don't autoflush: make tags added by an earlier call in this ingest visible to the query below
     have = {t.tag_id for t in db.query(AssetTag).filter_by(asset_id=asset.id).all()}
     for raw in names:
         name = raw.strip().lower()[:60]

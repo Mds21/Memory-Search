@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { API, api, tokens } from "./api";
+import { invalidate } from "./swr";
 
 export type UpStatus = "uploading" | "queued" | "processing" | "ready" | "failed" | "duplicate" | "rejected";
 export interface UpItem { key: string; name: string; status: UpStatus; progress: number; assetId?: string; detail?: string | null }
@@ -90,6 +91,9 @@ export function UploadsProvider({ children }: { children: React.ReactNode }) {
     connect();
     return () => { stop = true; es?.close(); clearTimeout(timer); };
   }, [toast]);
+
+  // Any asset change makes cached section data stale; the next visit refetches it in the background.
+  useEffect(() => { if (tick) invalidate("/"); }, [tick]);
 
   const busy = items.filter((i) => i.status === "uploading" || i.status === "queued" || i.status === "processing").length;
   return <C.Provider value={{ items, addFiles, importZip, busy, tick, toast, toasts, retry }}>{children}</C.Provider>;

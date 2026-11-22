@@ -178,8 +178,9 @@ def test_signed_media_url_rules(client, alice, library):
     assert client.get(a["thumb_url"].split("sig=")[0] + "sig=bad").status_code == 403
 
 
-def test_admin_and_roles(client, alice, bob):
-    assert client.get(f"{API}/admin/stats", headers=alice).status_code == 200  # first user = admin
+def test_admin_and_roles(client, admin, alice, bob):
+    assert client.get(f"{API}/admin/stats", headers=admin).status_code == 200  # the owner account
+    assert client.get(f"{API}/admin/stats", headers=alice).status_code == 403  # signing up never makes you admin
     assert client.get(f"{API}/admin/stats", headers=bob).status_code == 403
 
 

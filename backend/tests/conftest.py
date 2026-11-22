@@ -11,6 +11,10 @@ os.environ["DATA_DIR"] = _TMP
 os.environ["DATABASE_URL"] = f"sqlite:///{_TMP}/test.db"
 os.environ["JWT_SECRET"] = "test-secret-test-secret-test-secret-123"
 os.environ["WORKER_CONCURRENCY"] = "2"
+os.environ["STT"] = "none"  # no model downloads in tests
+os.environ["SIGNUPS_PER_HOUR"] = "1000"  # the suite creates many accounts from one address
+for _k in ("GOOGLE_CLIENT_ID", "SMTP_HOST", "SMTP_FROM"):
+    os.environ[_k] = ""  # tests never use the developer's real Google/email/SMS setup
 
 import pytest
 from fastapi.testclient import TestClient
@@ -85,6 +89,18 @@ def files():
     make_video(d / "clip_20240615.mp4")
     (d / "bad.xyz").write_text("nope")
     return d
+
+
+@pytest.fixture(scope="session")
+def admin(client):
+    """The owner account created on first start: one-time password from the file, then a password of our own."""
+    creds = (Path(_TMP) / "admin-credentials.txt").read_text()
+    pw = next(ln.split(":", 1)[1].strip() for ln in creds.splitlines() if ln.startswith("one-time password"))
+    r = client.post(f"{API}/auth/login", json={"identifier": "admin", "password": pw})
+    assert r.status_code == 200 and r.json()["user"]["must_change_password"], r.text
+    r = client.post(f"{API}/me/password", headers={"Authorization": "Bearer " + r.json()["access_token"]}, json={"new_password": "owner-pass-123"})
+    assert r.status_code == 200, r.text
+    return {"Authorization": "Bearer " + r.json()["access_token"]}
 
 
 @pytest.fixture(scope="session")

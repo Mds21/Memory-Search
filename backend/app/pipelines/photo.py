@@ -9,6 +9,8 @@ from .. import geo
 from ..adapters import registry
 from ..config import get_settings
 from ..models import Asset
+from ..understanding import understand
+from ..understanding.visual import analyze
 from .common import add_chunk, add_image_chunk, clear_derived, date_from_filename, detect_lang, upsert_tags
 
 try:  # optional HEIC support
@@ -75,7 +77,18 @@ def describe_and_index(db: Session, asset: Asset, img: Image.Image, *, chunk_typ
         hint = "" if stem.replace(" ", "").isdigit() or stem.upper().startswith(("IMG", "DSC", "PXL")) else stem
     desc = registry.vlm().describe(data, hint=hint)
 
+    # OCR first: the visual cues use it (a signature has no text, a card has lots)
+    visible = desc.visible_text or ""
+    if not visible and cfg.ocr_photos and registry.ocr().available:
+        visible = registry.ocr().ocr_image(img, quick=chunk_type != "caption")  # keyframes: one fast pass
+    cues = analyze(img, ocr_text=visible)
+    desc.tags = list(dict.fromkeys([*desc.tags, *cues.tags]))
+    desc.visible_text = visible
+    desc.cues = cues.scores
+
     parts = [desc.caption]
+    if cues.sentence:
+        parts.append(cues.sentence)
     if asset.place_name:
         parts.append(f"Taken in {asset.place_name}.")
     if asset.taken_at:
@@ -86,20 +99,40 @@ def describe_and_index(db: Session, asset: Asset, img: Image.Image, *, chunk_typ
     add_chunk(db, asset, chunk_type, text, embed_text=text + " " + " ".join(desc.tags), meta={"tags": desc.tags}, **kw)
     add_image_chunk(db, asset, data, chunk_type="video_frame" if chunk_type == "video_frame" else "image", **kw)
 
-    visible = desc.visible_text or ""
-    if not visible and cfg.ocr_photos and registry.ocr().available:
-        tmp = registry.store().root / "_tmp_ocr.png"
-        try:
-            ocr_img = img.copy()
-            ocr_img.thumbnail((1600, 1600))
-            ocr_img.convert("L").save(tmp)
-            visible = registry.ocr().ocr(tmp)
-        finally:
-            tmp.unlink(missing_ok=True)
-    visible = " ".join(visible.split())
-    if len(visible) >= 8:
-        add_chunk(db, asset, "ocr_text", visible, language=detect_lang(visible), **kw)
+    flat = " ".join(visible.split())
+    if len(flat) >= 8:
+        add_chunk(db, asset, "ocr_text", flat, language=detect_lang(flat), **kw)
     return desc
+
+
+SCENE_NAMES = {"beach": "Beach", "sea": "Sea", "sky": "Sky", "greenery": "Greenery", "snow": "Snow", "sunset": "Sunset",
+               "night": "Night", "signature": "Signature", "document": "Document or card", "screenshot": "Screenshot"}
+
+
+def _camera(exif) -> str | None:
+    make, model = str(exif.get(271, "") or "").strip(" \x00"), str(exif.get(272, "") or "").strip(" \x00")
+    if model.lower().startswith(make.lower()):
+        make = ""
+    cam = " ".join(x for x in (make.title() if make.isupper() else make, model) if x)
+    return cam or None
+
+
+def photo_details(asset: Asset, exif, desc) -> list[dict]:
+    """Plain-language facts about a photo (no pixel counts or formats): when, where, what device, what's in it."""
+    out = []
+    if asset.taken_at:
+        out.append({"key": "taken_on", "label": "Taken on", "value": f"{asset.taken_at:%d %b %Y}"})
+    if asset.place_name:
+        out.append({"key": "place", "label": "Place", "value": asset.place_name})
+    cam = _camera(exif)
+    if cam:
+        out.append({"key": "camera", "label": "Camera", "value": cam})
+    scene = [SCENE_NAMES[k] for k in sorted(desc.cues, key=lambda k: -desc.cues[k]) if k in SCENE_NAMES]
+    if scene:
+        out.append({"key": "scene", "label": "Looks like", "value": ", ".join(scene[:3])})
+    if desc.cues.get("document", 0) >= 0.5 or desc.cues.get("screenshot", 0) >= 0.5:  # real text, not OCR noise on art/texture
+        out.append({"key": "has_text", "label": "Contains text", "value": "Yes"})
+    return out
 
 
 def ingest_photo(db: Session, asset: Asset, src: Path) -> None:
@@ -110,7 +143,7 @@ def ingest_photo(db: Session, asset: Asset, src: Path) -> None:
         exif = img.getexif()
         img = ImageOps.exif_transpose(img)
     except Exception as e:
-        raise ValueError(f"Cannot read image ({e}). HEIC needs pillow-heif installed.") from e
+        raise ValueError("We couldn't open this picture. It may be damaged or in a format we can't read yet.") from e
 
     asset.width, asset.height = img.size
     asset.taken_at = _taken(exif) or date_from_filename(asset.filename) or asset.taken_at
@@ -127,5 +160,8 @@ def ingest_photo(db: Session, asset: Asset, src: Path) -> None:
     clear_derived(db, asset)
     desc = describe_and_index(db, asset, img)
     upsert_tags(db, asset, desc.tags)
+    understand(db, asset, text=desc.visible_text or "", visual_scores=desc.cues,
+               extra_text=" ".join([desc.caption, *desc.tags]) if registry.vlm().name != "basic" else "",
+               file_facts=photo_details(asset, exif, desc))
     if asset.place_name:
         upsert_tags(db, asset, [asset.place_name.split(",")[0]])

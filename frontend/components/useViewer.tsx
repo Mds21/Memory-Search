@@ -1,8 +1,11 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import type { Asset } from "@/lib/types";
-import Lightbox from "./Lightbox";
+
+// The viewer is only needed after a click, so keep it out of every page's initial bundle.
+const Lightbox = dynamic(() => import("./Lightbox"), { ssr: false });
 
 export const assetHref = (a: Asset, q?: string) =>
   a.kind === "document" ? `/documents/${a.asset_id}${a.match?.page ? `?page=${a.match.page}` : ""}${q ? `${a.match?.page ? "&" : "?"}q=${encodeURIComponent(q)}` : ""}` : `/media/${a.asset_id}`;

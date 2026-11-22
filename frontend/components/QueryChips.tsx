@@ -1,5 +1,5 @@
 "use client";
-import { Calendar, FileText, Image as ImageIcon, MapPin, Plus, Tag, Video, X } from "lucide-react";
+import { BadgeCheck, Calendar, FileText, Image as ImageIcon, MapPin, Plus, Tag, UserRound, Video, X } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import type { Kind, Parsed } from "@/lib/types";
@@ -28,9 +28,11 @@ export default function QueryChips({ parsed, onChange }: { parsed: Parsed; onCha
       {date && <Chip icon={Calendar} label={date} onRemove={() => set({ date_from: null, date_to: null })} />}
       {f.place && <Chip icon={MapPin} label={f.place} onRemove={() => set({ place: null })} />}
       {f.tags.map((tg) => <Chip key={tg} icon={Tag} label={tg} onRemove={() => set({ tags: f.tags.filter((x) => x !== tg) })} />)}
+      {(f.doc_types || []).map((d) => <Chip key={d} icon={BadgeCheck} label={parsed.doc_labels?.[d] || d.replace(/_/g, " ")} onRemove={() => set({ doc_types: f.doc_types.filter((x) => x !== d) })} />)}
+      {f.person && <Chip icon={UserRound} label={f.person.replace(/^./, (c) => c.toUpperCase())} onRemove={() => set({ person: null })} />}
       <button className="chip hover:bg-paper-sunk" onClick={() => setOpen((o) => !o)} aria-expanded={open}><Plus className="h-3.5 w-3.5" />{t("search.addFilter")}</button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-2 w-72 space-y-3 rounded-xl border border-paper-line bg-white p-3 shadow-lift">
+        <div className="absolute left-0 top-full z-20 mt-2 w-72 space-y-3 rounded-xl border border-paper-line bg-paper-card p-3 shadow-lift">
           <div className="flex gap-1.5">{(["photo", "video", "document"] as Kind[]).map((k) => { const I = KIND_ICON[k]; return (
             <button key={k} onClick={() => toggle(k)} className={`chip ${f.kinds.includes(k) ? "chip-on" : ""}`}><I className="h-3.5 w-3.5" />{t(KIND_KEY[k])}</button>); })}</div>
           <div className="grid grid-cols-2 gap-2">

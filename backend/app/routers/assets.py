@@ -1,3 +1,5 @@
+import os
+import time
 import hashlib
 import mimetypes
 import tempfile
@@ -26,12 +28,11 @@ from .common import owned_asset
 
 router = APIRouter(tags=["assets"])
 
-PHOTO = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
-VIDEO = {".mp4", ".mov", ".m4v", ".mkv", ".avi", ".webm", ".mpg", ".mpeg", ".3gp", ".wmv"}
-DOC = {".pdf", ".docx", ".pptx", ".xlsx", ".xlsm", ".txt", ".md", ".csv", ".rtf", ".eml", ".log", ".json"}
+from ..filetypes import DOC_EXT as DOC, PHOTO_EXT as PHOTO, VIDEO_EXT as VIDEO, classify as classify_file  # noqa: E402
 
 
 def kind_of(filename: str) -> str | None:
+    """Extension-only guess (used where no bytes are available). Uploads use `classify_file`, which sniffs content."""
     e = Path(filename).suffix.lower()
     return "photo" if e in PHOTO else "video" if e in VIDEO else "document" if e in DOC else None
 
@@ -46,17 +47,17 @@ def detail(db: Session, a: Asset) -> dict:
 
 
 def ingest_file(db: Session, user_id: str, src: Path, filename: str, sha: str, size: int) -> tuple[str, Asset | None, str | None]:
-    kind = kind_of(filename)
+    kind, mime, ext = classify_file(src, filename)
     if not kind:
-        return "rejected", None, f"Unsupported file type: {Path(filename).suffix or 'no extension'}"
+        return "rejected", None, "This type of file isn't supported yet."
     dup = db.query(Asset).filter_by(owner_id=user_id, sha256=sha).first()
     if dup:
         return "duplicate", dup, None
-    a = Asset(owner_id=user_id, kind=kind, filename=filename[:500], mime_type=mimetypes.guess_type(filename)[0] or "application/octet-stream",
-              size_bytes=size, sha256=sha, status="queued", meta={})
+    a = Asset(owner_id=user_id, kind=kind, filename=filename[:500], mime_type=mime or mimetypes.guess_type("x" + ext)[0] or "application/octet-stream",
+              size_bytes=size, sha256=sha, status="queued", meta={"ext": ext})
     db.add(a)
     db.flush()
-    registry.store().put_file(f"{user_id}/{a.id}/original{Path(filename).suffix.lower()}", src)
+    registry.store().put_file(a.original_key, src)
     db.commit()
     runner.enqueue(a.id)
     return "queued", a, None
@@ -65,7 +66,9 @@ def ingest_file(db: Session, user_id: str, src: Path, filename: str, sha: str, s
 def _spool(upload: UploadFile) -> tuple[Path, str, int]:
     limit = get_settings().max_upload_mb * 1024 * 1024
     h, size = hashlib.sha256(), 0
-    tmp = Path(tempfile.mkstemp(dir=get_settings().data_path, prefix="up_")[1])
+    fd, name = tempfile.mkstemp(dir=get_settings().data_path, prefix="up_")
+    os.close(fd)  # mkstemp leaves the descriptor open; on Windows that blocks the later unlink
+    tmp = Path(name)
     with open(tmp, "wb") as f:
         while chunk := upload.file.read(1024 * 1024):
             size += len(chunk)
@@ -237,15 +240,16 @@ def media(asset_id: str, variant: str, exp: int, sig: str, db: Session = Depends
         raise HTTPException(404)
     base = f"{a.owner_id}/{a.id}"
     store = registry.store()
-    ext = Path(a.filename).suffix.lower()
     if variant in ("thumb", "preview"):
         key, mt = f"{base}/{variant}.webp", "image/webp"
     elif variant == "video":
-        key, mt = (f"{base}/proxy.mp4", "video/mp4") if a.has_proxy else (f"{base}/original{ext}", a.mime_type)
+        key, mt = (f"{base}/proxy.mp4", "video/mp4") if a.has_proxy else (a.original_key, a.mime_type)
     elif variant == "original":
-        key, mt = f"{base}/original{ext}", a.mime_type
+        key, mt = a.original_key, a.mime_type
     else:
         raise HTTPException(404)
     if not store.exists(key):
         raise HTTPException(404, "File not available")
-    return FileResponse(store.path(key), media_type=mt, headers={"Cache-Control": "private, max-age=600", "Content-Disposition": "inline"})
+    # Cache until the signed link expires (thumbnails/previews are immutable for a given URL).
+    max_age = max(0, min(exp - int(time.time()), 86400))
+    return FileResponse(store.path(key), media_type=mt, headers={"Cache-Control": f"private, max-age={max_age}", "Content-Disposition": "inline"})

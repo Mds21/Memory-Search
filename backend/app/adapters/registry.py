@@ -45,15 +45,22 @@ def llm() -> LLM:
     return OllamaLLM(arg, s.ollama_base_url) if kind == "ollama" else ExtractiveLLM()
 
 
+def _whisper_installed() -> bool:
+    import importlib.util
+    return importlib.util.find_spec("faster_whisper") is not None
+
+
 @lru_cache
 def stt() -> STT:
     kind, arg = _split(get_settings().stt)
-    return FasterWhisperSTT(arg or "small") if kind == "faster_whisper" else NoSTT()
+    if kind == "auto":  # speech in videos becomes searchable as soon as the add-on is installed
+        return FasterWhisperSTT("base") if _whisper_installed() else NoSTT()
+    return FasterWhisperSTT(arg or "base") if kind == "faster_whisper" else NoSTT()
 
 
 @lru_cache
 def ocr() -> TesseractOCR:
-    return TesseractOCR()
+    return TesseractOCR(cmd=get_settings().tesseract_cmd or None)
 
 
 @lru_cache

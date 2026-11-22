@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .adapters import registry
 from .config import get_settings
 from .db import init_db
 from .pipelines import runner
@@ -16,6 +15,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    from .accounts import ensure_admin_account
+    ensure_admin_account()
+    from .routers.search import purge_old_conversations
+    purge_old_conversations()
     n = runner.resume_pending()
     if n:
         logging.getLogger("smriti").info("resumed %s pending assets", n)
@@ -32,4 +35,4 @@ for r in (auth.router, assets.router, search.router, library.router, misc.router
 
 @app.get("/api/v1/health", tags=["health"])
 def health():
-    return {"status": "ok", "adapters": registry.describe_adapters()}
+    return {"status": "ok"}  # model setup is admin-only (/admin/stats)

@@ -40,8 +40,8 @@ def run_ingest(asset_id: str, attempts: int = 3) -> None:
         db.add(job)
         asset.status, asset.status_detail = "processing", "starting"
         db.commit()
-        src = registry.store().path(f"{asset.owner_id}/{asset.id}/original{Path(asset.filename).suffix.lower()}")
-        err = None
+        src = registry.store().path(asset.original_key)
+        err = shown = None
         for n in range(1, attempts + 1):
             job.attempts = n
             try:
@@ -49,17 +49,19 @@ def run_ingest(asset_id: str, attempts: int = 3) -> None:
                 asset.status, asset.status_detail, job.status, job.error = "ready", None, "done", None
                 db.commit()
                 return
-            except ValueError as e:  # permanent, human-readable
+            except ValueError as e:  # permanent: the file itself is the problem
                 db.rollback()
-                err = str(e)
+                err, shown = str(e), str(e)
                 break
             except Exception as e:  # transient: retry with backoff
                 db.rollback()
                 err = f"{type(e).__name__}: {e}"
+                shown = "Something went wrong while reading this file. Please try again."
                 log.warning("ingest %s attempt %s failed: %s", asset_id, n, err)
                 time.sleep(min(2 ** n, 8))
         asset = db.get(Asset, asset_id)
-        asset.status, asset.status_detail = "failed", (err or "Unknown error")[:500]
+        # people see a plain sentence; the technical reason stays in the job record and the server log
+        asset.status, asset.status_detail = "failed", (shown or "We couldn't read this file.")[:300]
         job.status, job.error = "failed", err
         db.commit()
     finally:

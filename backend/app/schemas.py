@@ -2,15 +2,44 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class RegisterIn(BaseModel):
-    email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-    password: str = Field(min_length=8, max_length=200)
+    email: str | None = None          # email and/or phone: at least one
+    phone: str | None = None
+    password: str = Field(min_length=1, max_length=200)
     display_name: str | None = None
     language: str = "en"
 
 
 class LoginIn(BaseModel):
-    email: str
-    password: str
+    identifier: str | None = None     # email, phone or username
+    email: str | None = None          # older clients send "email"
+    password: str = Field(max_length=200)
+
+
+class ForgotIn(BaseModel):
+    identifier: str = Field(min_length=3, max_length=200)
+
+
+class ResetIn(BaseModel):
+    identifier: str = Field(min_length=3, max_length=200)
+    code: str = Field(min_length=4, max_length=10)
+    password: str = Field(max_length=200)
+
+
+class PasswordChangeIn(BaseModel):
+    current_password: str | None = None
+    new_password: str = Field(max_length=200)
+
+
+class ContactPatch(BaseModel):
+    email: str | None = None
+    phone: str | None = None
+    username: str | None = None
+    current_password: str | None = None
+
+
+class GoogleIn(BaseModel):
+    credential: str = Field(min_length=20, max_length=8192)  # the ID token from Google's button
+    language: str | None = None
 
 
 class RefreshIn(BaseModel):
