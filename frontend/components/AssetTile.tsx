@@ -17,7 +17,7 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
 
   return (
     <button onClick={click} aria-label={label} aria-pressed={selectMode ? !!selected : undefined}
-      className={`group relative block w-full overflow-hidden rounded-xl border bg-white text-left transition-shadow hover:shadow-lift ${selected ? "border-tide ring-2 ring-tide" : "border-paper-line"}`}>
+      className={`group relative block w-full overflow-hidden rounded-xl border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-tide ${selected ? "border-tide ring-2 ring-tide" : "border-paper-line"}`}>
       <div className="relative w-full bg-paper-sunk" style={{ aspectRatio: String(Math.min(Math.max(ratio, 0.6), 1.9)) }}>
         {a.thumb_url ? <img src={abs(a.preview_url || a.thumb_url)} alt={label} loading="lazy" className={`h-full w-full ${a.kind === "document" ? "object-cover object-top" : "object-cover"}`} />
           : <div className="flex h-full items-center justify-center text-ink-faint">{pending ? <Spinner className="h-6 w-6" /> : <FileText className="h-8 w-8" />}</div>}
@@ -26,6 +26,9 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
           <span className="absolute bottom-2 right-2 rounded bg-ink/70 px-1.5 py-0.5 text-[11px] font-medium text-white">{fmtDuration(a.duration_ms)}</span></>)}
         {pending && <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-ink-soft"><Spinner className="h-3 w-3" />{t(`up.${a.status}`)}</span>}
         {a.status === "failed" && <span className="absolute left-2 top-2 rounded-full bg-danger px-2 py-0.5 text-[11px] font-medium text-white">{t("up.failed")}</span>}
+        {a.kind !== "document" && (a.place || a.taken_at) && !selectMode && (
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent px-2.5 pb-2 pt-8 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            {[a.place, a.taken_at ? new Date(a.taken_at).toLocaleDateString(undefined, { month: "short", year: "numeric" }) : null].filter(Boolean).join(" • ")}</span>)}
         {selectMode && <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 ${selected ? "border-tide bg-tide text-white" : "border-white bg-ink/30"}`}>{selected && <Check className="h-3.5 w-3.5" />}</span>}
         {a.match?.page && <span className="absolute right-2 top-2 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-semibold text-tide-dark shadow">{t("search.page")} {a.match.page}</span>}
       </div>

@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       <header className="mx-auto max-w-2xl text-center">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{user?.display_name ? `${user.display_name}, ` : ""}{t("home.title").replace(/^./, (c) => c.toLowerCase())}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{user?.display_name ? `${user.display_name}, ` : ""}{t("home.title").replace(/^./, (c) => (user?.display_name ? c.toLowerCase() : c))}</h1>
         <div className="mt-6 text-left"><SearchBar large value={q} onChange={setQ} onSubmit={go} placeholder={t("home.placeholder")} autoFocus /></div>
         <div className="mt-4 flex flex-wrap justify-center gap-2" aria-label={t("home.try")}>
           {(EXAMPLES[lang] || EXAMPLES.en).map((e) => <button key={e} className="chip hover:bg-tide-soft" onClick={() => go(e)}>{e}</button>)}

@@ -1,7 +1,14 @@
 import type { Parsed } from "./types";
 
-export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-export const ORIGIN = new URL(API).origin;
+/** API base. Set NEXT_PUBLIC_API_URL at build time, otherwise: localhost -> :8000, any other host -> same origin /api/v1 (reverse proxy). */
+function resolveApi(): string {
+  const env = process.env.NEXT_PUBLIC_API_URL;
+  if (env) return env.replace(/\/$/, "");
+  if (typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname)) return `${window.location.origin}/api/v1`;
+  return "http://localhost:8000/api/v1";
+}
+export const API = resolveApi();
+export const ORIGIN = new URL(API, "http://localhost").origin;
 const KEY = "smriti.tokens";
 
 export interface Tokens { access_token: string; refresh_token: string }

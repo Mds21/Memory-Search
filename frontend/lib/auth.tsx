@@ -8,7 +8,9 @@ interface AuthCtx { user: User | null; loading: boolean; login: (e: string, p: s
 const Ctx = createContext<AuthCtx>(null as unknown as AuthCtx);
 
 async function authCall(path: string, body: object) {
-  const res = await fetch(`${API}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  let res: Response;
+  try { res = await fetch(`${API}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+  catch { throw new Error(`Cannot reach the server at ${API}. Check that the backend is running and that CORS allows this site.`); }
   const d = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detail = d.detail;

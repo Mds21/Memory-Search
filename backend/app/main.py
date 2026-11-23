@@ -24,7 +24,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Smriti API", version="1.0.0", lifespan=lifespan,
               description="Memory & document search backend. Interactive docs at /docs.")
-app.add_middleware(CORSMiddleware, allow_origins=get_settings().origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+_origins = get_settings().origins
+# Auth uses bearer tokens (no cookies), so "*" is safe when set explicitly.
+app.add_middleware(CORSMiddleware, allow_origins=["*"] if "*" in _origins else _origins, allow_credentials="*" not in _origins,
+                   allow_methods=["*"], allow_headers=["*"])
 
 for r in (auth.router, assets.router, search.router, library.router, misc.router):
     app.include_router(r, prefix="/api/v1")

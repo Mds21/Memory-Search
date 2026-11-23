@@ -105,7 +105,7 @@ function SearchView() {
           <div className="mb-4 space-y-3">
             <QueryChips parsed={parsed} onChange={applyChips} />
             <div className="flex items-center justify-between text-sm text-ink-mute">
-              <span>{results ? `${meta?.total ?? results.length} ${t("search.matches")}${meta ? ` • ${meta.took} ms` : ""}` : t("search.thinking")}</span>
+              <span>{results ? `${meta?.total ?? results.length} ${(meta?.total ?? results.length) === 1 ? t("search.matches").replace(/^matches$/, "match") : t("search.matches")}${meta ? ` • ${meta.took} ms` : ""}` : t("search.thinking")}</span>
               <button className="btn-ghost" onClick={save}><Bookmark className="h-4 w-4" />{t("search.save")}</button>
             </div>
           </div>)}

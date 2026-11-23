@@ -1,4 +1,5 @@
 "use client";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [name, setName] = useState("");
+  const [show, setShow] = useState(false);
   const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (!loading && user) router.replace("/"); }, [loading, user, router]);
@@ -50,7 +52,8 @@ export default function LoginPage() {
             {mode === "up" && (<div><label className="mb-1 block text-sm font-medium" htmlFor="name">{t("auth.name")}</label><input id="name" className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></div>)}
             <div><label className="mb-1 block text-sm font-medium" htmlFor="email">{t("auth.email")}</label><input id="email" type="email" required className="input" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></div>
             <div><label className="mb-1 block text-sm font-medium" htmlFor="pw">{t("auth.password")}</label>
-              <input id="pw" type="password" required minLength={mode === "up" ? 8 : 1} className="input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "in" ? "current-password" : "new-password"} />
+              <div className="relative"><input id="pw" type={show ? "text" : "password"} required minLength={mode === "up" ? 8 : 1} className="input pr-10" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "in" ? "current-password" : "new-password"} />
+                <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-faint hover:text-ink">{show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div>
               {mode === "up" && <p className="mt-1 text-xs text-ink-mute">{t("auth.passwordHint")}</p>}</div>
             {err && <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{err}</p>}
             <button className="btn-primary w-full" disabled={busy}>{busy && <Spinner />}{mode === "in" ? t("auth.signIn") : t("auth.create")}</button>
