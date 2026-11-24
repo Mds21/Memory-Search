@@ -24,7 +24,7 @@ export default function CollectionPage() {
   const remove = async (assetId: string) => { await api.del(`/collections/${id}/items/${assetId}`); load(); };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         {edit ? (
           <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); rename(); }}><input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} /><button className="btn-primary">{t("common.save")}</button></form>

@@ -27,7 +27,7 @@ export default function Timeline() {
   const max = Math.max(1, ...(buckets || []).map((b) => b.count));
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
       <h1 className="h-page mb-1">{t("tl.title")}</h1>
       <p className="mb-5 text-sm text-ink-mute">{t("tl.pick")}</p>
       {!buckets ? <Spinner /> : buckets.length === 0 ? <Empty title={t("lib.noItems")} /> : (<>

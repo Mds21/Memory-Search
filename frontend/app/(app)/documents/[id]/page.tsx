@@ -32,7 +32,7 @@ function DocView() {
   body.forEach((c) => { const p = c.page ?? 1; pages.set(p, [...(pages.get(p) || []), c.content]); });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
       <button className="btn-ghost mb-3 -ml-2" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" />{t("common.close")}</button>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0"><h1 className="h-page truncate">{a.title}</h1><p className="text-sm text-ink-mute">{[a.page_count ? `${a.page_count} ${t("doc.pages").toLowerCase()}` : null, a.size_bytes ? fmtBytes(a.size_bytes) : null, a.language].filter(Boolean).join(" • ")}</p></div>

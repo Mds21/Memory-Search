@@ -1,5 +1,5 @@
 "use client";
-import { Bookmark, MessageSquarePlus, Sparkles } from "lucide-react";
+import { Bookmark, MessageSquarePlus, MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -75,24 +75,24 @@ function SearchView() {
     if (!c) return <span key={i}>{part}</span>;
     const res = results?.find((r) => r.asset_id === c.asset_id);
     const href = res ? assetHref({ ...res, match: res.match ? { ...res.match, page: c.page ?? res.match.page } : ({ page: c.page } as any) }) : cite(c);
-    return <Link key={i} href={href} title={c.title} className="mx-0.5 rounded bg-tide-soft px-1 text-xs font-semibold text-tide hover:bg-tide-ring/50">{part.replace(/[\[\]]/g, "")}</Link>;
+    return <Link key={i} href={href} title={c.title} className="mx-0.5 rounded-sm bg-tide-soft px-1 font-mono text-[11px] font-medium text-tide transition-colors hover:bg-tide-ring/40">{part.replace(/[\[\]]/g, "")}</Link>;
   });
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
-      <section className="flex min-h-[40vh] flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]" aria-label="Chat">
-        <div className="mb-3 flex items-center justify-between"><h1 className="h-page">{t("nav.search")}</h1>
-          {msgs.length > 0 && <button className="btn-ghost" onClick={reset}><MessageSquarePlus className="h-4 w-4" />{t("search.new")}</button>}</div>
+    <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <section className="flex min-h-[40vh] flex-col lg:sticky lg:top-8 lg:h-[calc(100vh-4rem)]" aria-label="Chat">
+        <div className="mb-4 flex items-center justify-between"><h1 className="h-page">{t("nav.search")}</h1>
+          {msgs.length > 0 && <button className="btn-ghost" onClick={reset}><MessageSquarePlus className="h-4 w-4" strokeWidth={1.75} />{t("search.new")}</button>}</div>
         <div className="flex-1 space-y-4 overflow-y-auto pr-1" aria-live="polite">
-          {msgs.length === 0 && <Empty icon={<Sparkles className="h-7 w-7" />} title={t("search.empty")} body={t("home.placeholder")} />}
-          {msgs.map((m) => m.role === "user" ? (
-            <div key={m.id} className="ml-8 rounded-2xl rounded-br-sm bg-tide px-3.5 py-2 text-sm text-white">{m.text}</div>
+          {msgs.length === 0 && <Empty icon={<MessagesSquare className="h-6 w-6" strokeWidth={1.5} />} title={t("search.empty")} body={t("home.placeholder")} />}
+          {msgs.filter((m) => m.role === "user" || m.streaming || m.text || m.error).map((m) => m.role === "user" ? (
+            <div key={m.id} className="ml-auto w-fit max-w-[85%] rounded-xl bg-paper-sunk px-4 py-2.5 text-sm text-ink">{m.text}</div>
           ) : (
-            <div key={m.id} className={`mr-4 rounded-2xl rounded-bl-sm border px-3.5 py-2.5 text-sm leading-relaxed ${m.error ? "border-danger/30 bg-danger-soft text-danger" : "border-paper-line bg-paper-card"}`}>
+            <div key={m.id} className={`mr-2 rounded-xl border px-4 py-3 text-sm leading-relaxed shadow-soft ${m.error ? "border-danger/30 bg-danger-soft text-danger" : "border-paper-line bg-paper-card"}`}>
               {m.streaming && !m.text ? <span className="inline-flex items-center gap-2 text-ink-mute"><Spinner />{t("search.thinking")}</span> : <p className="whitespace-pre-wrap">{renderText(m)}</p>}
               {m.citations && m.citations.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5 border-t border-paper-line pt-2"><span className="text-xs text-ink-mute">{t("search.sources")}:</span>
-                  {m.citations.map((c) => <Link key={c.chunk_id} href={cite(c)} className="chip hover:bg-tide-soft"><b>{c.label.replace(/[\[\]]/g, "")}</b><span className="max-w-[10rem] truncate">{c.title}{c.page ? ` • ${t("search.page")} ${c.page}` : ""}</span></Link>)}</div>)}
+                <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-paper-line pt-3"><span className="label mr-1">{t("search.sources")}</span>
+                  {m.citations.map((c) => <Link key={c.chunk_id} href={cite(c)} className="chip hover:bg-paper-sunk hover:text-ink"><span className="font-mono text-[11px] text-tide">{c.label.replace(/[\[\]]/g, "")}</span><span className="max-w-[10rem] truncate">{c.title}{c.page ? ` · ${t("search.page")} ${c.page}` : ""}</span></Link>)}</div>)}
               {m.messageId && <div className="mt-1 flex justify-end"><FeedbackButtons messageId={m.messageId} /></div>}
             </div>))}
           <div ref={endRef} />
@@ -102,11 +102,11 @@ function SearchView() {
 
       <section aria-label={t("search.results")} className="min-w-0">
         {parsed && (
-          <div className="mb-4 space-y-3">
+          <div className="mb-6 space-y-3">
             <QueryChips parsed={parsed} onChange={applyChips} />
-            <div className="flex items-center justify-between text-sm text-ink-mute">
-              <span>{results ? `${meta?.total ?? results.length} ${(meta?.total ?? results.length) === 1 ? t("search.matches").replace(/^matches$/, "match") : t("search.matches")}${meta ? ` • ${meta.took} ms` : ""}` : t("search.thinking")}</span>
-              <button className="btn-ghost" onClick={save}><Bookmark className="h-4 w-4" />{t("search.save")}</button>
+            <div className="flex items-center justify-between font-mono text-xs tabular-nums text-ink-mute">
+              <span>{results ? `${meta?.total ?? results.length} ${(meta?.total ?? results.length) === 1 ? t("search.matches").replace(/^matches$/, "match") : t("search.matches")}${meta ? ` · ${meta.took} ms` : ""}` : t("search.thinking")}</span>
+              <button className="btn-ghost font-sans" onClick={save}><Bookmark className="h-4 w-4" strokeWidth={1.75} />{t("search.save")}</button>
             </div>
           </div>)}
         {results === null ? (parsed || busy ? <GridSkeleton n={8} /> : null)

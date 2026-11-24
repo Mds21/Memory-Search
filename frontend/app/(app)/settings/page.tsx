@@ -30,7 +30,7 @@ export default function Settings() {
   const bytes = store?.items.reduce((s, i) => s + i.bytes, 0) || 0;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-8">
       <h1 className="h-page">{t("set.title")}</h1>
       <section className="card space-y-4 p-5"><h2 className="font-medium">{t("set.profile")}</h2>
         <p className="text-sm text-ink-mute">{user?.email}</p>

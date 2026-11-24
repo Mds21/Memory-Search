@@ -1,5 +1,5 @@
 "use client";
-import { Bookmark, CalendarClock, Upload } from "lucide-react";
+import { ArrowRight, Bookmark, CalendarClock, CornerDownRight, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,7 +8,6 @@ import SearchBar from "@/components/SearchBar";
 import { Empty, GridSkeleton } from "@/components/ui";
 import { useViewer } from "@/components/useViewer";
 import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import type { Asset, SavedSearch } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
@@ -23,7 +22,6 @@ const EXAMPLES: Record<string, string[]> = {
 
 export default function Home() {
   const { t, lang } = useI18n();
-  const { user } = useAuth();
   const { tick } = useUploads();
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -43,29 +41,48 @@ export default function Home() {
   const all = [...otd, ...(recent || [])];
   const viewer = useViewer(all);
 
+  const Section = ({ title, icon: I, meta, children, href }: { title: string; icon?: any; meta?: React.ReactNode; href?: string; children: React.ReactNode }) => (
+    <section className="mt-12">
+      <div className="mb-4 flex items-center gap-2">
+        {I && <I className="h-4 w-4 text-ink-mute" strokeWidth={1.75} />}
+        <h2 className="text-[15px] font-medium">{title}</h2>
+        {meta && <span className="font-mono text-xs tabular-nums text-ink-faint">{meta}</span>}
+        <span className="flex-1" />
+        {href && <Link href={href} className="inline-flex items-center gap-1 text-sm text-ink-mute transition-colors hover:text-ink">{t("nav.library")}<ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} /></Link>}
+      </div>
+      {children}
+    </section>
+  );
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="max-w-3xl">
-        <h1 className="font-serif text-4xl font-medium leading-[1.1] tracking-[-0.02em] sm:text-5xl">{t("home.title")}</h1>
-        <div className="mt-7"><SearchBar large value={q} onChange={setQ} onSubmit={go} placeholder={t("home.placeholder")} autoFocus /></div>
-        <ul className="mt-5 divide-y divide-paper-line border-y border-paper-line text-[15px]" aria-label={t("home.try")}>
-          {(EXAMPLES[lang] || EXAMPLES.en).map((e) => <li key={e}><button className="flex w-full items-baseline justify-between gap-4 py-2 text-left text-ink-soft hover:text-tide" onClick={() => go(e)}><span className="font-serif">“{e}”</span><span className="shrink-0 font-mono text-xs text-ink-faint">↵</span></button></li>)}
+    <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-8 sm:py-14">
+      <header className="max-w-3xl animate-rise">
+        <h1 className="font-serif text-[40px] font-medium leading-[1.08] tracking-[-0.02em] sm:text-[52px]">{t("home.title")}</h1>
+        <div className="mt-8"><SearchBar large value={q} onChange={setQ} onSubmit={go} placeholder={t("home.placeholder")} autoFocus /></div>
+        <ul className="mt-3 flex flex-col" aria-label={t("home.try")}>
+          {(EXAMPLES[lang] || EXAMPLES.en).map((e) => (
+            <li key={e}><button className="group flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink" onClick={() => go(e)}>
+              <CornerDownRight className="h-4 w-4 shrink-0 text-ink-faint" strokeWidth={1.75} /><span className="flex-1 truncate">{e}</span>
+              <span className="kbd opacity-0 transition-opacity group-hover:opacity-100">↵</span></button></li>))}
         </ul>
       </header>
 
       {recent && total === 0 ? (
-        <div className="mt-14"><Empty icon={<Upload className="h-8 w-8" />} title={t("home.emptyTitle")} body={t("home.emptyBody")}
+        <div className="mt-16"><Empty icon={<Upload className="h-6 w-6" strokeWidth={1.5} />} title={t("home.emptyTitle")} body={t("home.emptyBody")}
           action={<Link href="/uploads" className="btn-primary">{t("home.upload")}</Link>} /></div>
       ) : (<>
         {saved.length > 0 && (
-          <section className="mt-12"><h2 className="mb-3 flex items-center gap-2 border-b border-paper-line pb-2 font-serif text-lg font-medium"><Bookmark className="h-4 w-4 text-ink-faint" />{t("home.saved")}</h2>
-            <div className="flex flex-wrap gap-2">{saved.map((s) => <button key={s.id} className="chip hover:bg-tide-soft" onClick={() => go(s.query.query || s.name || "")}>{s.name || s.query.query}</button>)}</div></section>)}
+          <Section title={t("home.saved")} icon={Bookmark}>
+            <div className="flex flex-wrap gap-2">{saved.map((s) => <button key={s.id} className="chip hover:bg-paper-sunk hover:text-ink" onClick={() => go(s.query.query || s.name || "")}>{s.name || s.query.query}</button>)}</div>
+          </Section>)}
         {otd.length > 0 && (
-          <section className="mt-10"><h2 className="mb-3 flex items-center gap-2 border-b border-paper-line pb-2 font-serif text-lg font-medium"><CalendarClock className="h-4 w-4 text-ink-faint" />{t("home.onThisDay")}</h2>
-            <div className="flex gap-3 overflow-x-auto pb-2">{otd.map((a) => (
-              <div key={a.asset_id} className="w-44 shrink-0"><AssetTile asset={a} onOpen={viewer.open} /><p className="mt-1 text-xs text-ink-mute">{a.years_ago} {a.years_ago === 1 ? "year" : "years"} ago</p></div>))}</div></section>)}
-        <section className="mt-10"><h2 className="mb-3 border-b border-paper-line pb-2 font-serif text-lg font-medium">{t("home.recent")}</h2>
-          {!recent ? <GridSkeleton n={8} /> : <div className="masonry">{recent.map((a) => <AssetTile key={a.asset_id} asset={a} onOpen={viewer.open} />)}</div>}</section>
+          <Section title={t("home.onThisDay")} icon={CalendarClock}>
+            <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2">{otd.map((a) => (
+              <div key={a.asset_id} className="w-48 shrink-0"><AssetTile asset={a} onOpen={viewer.open} /><p className="mt-1 font-mono text-[11px] text-ink-faint">{a.years_ago} {a.years_ago === 1 ? "year" : "years"} ago</p></div>))}</div>
+          </Section>)}
+        <Section title={t("home.recent")} meta={recent ? total.toLocaleString() : undefined} href="/library">
+          {!recent ? <GridSkeleton n={8} /> : <div className="masonry">{recent.map((a) => <AssetTile key={a.asset_id} asset={a} onOpen={viewer.open} />)}</div>}
+        </Section>
       </>)}
       {viewer.node}
     </div>

@@ -71,7 +71,7 @@ export default function GoogleButton({ onCredential }: { onCredential: (credenti
 
   return (
     <div className="space-y-2">
-      <div ref={box} className={`w-full justify-center ${rendered ? "flex min-h-[40px]" : "hidden"}`} />
+      <div ref={box} className={`w-full justify-center [color-scheme:light] ${rendered ? "flex min-h-[40px]" : "hidden"}`} />
       {!rendered && (
         <button type="button" disabled={clientId === undefined}
           onClick={() => setNote(clientId ? t("auth.googleOffline") : t("auth.googleOff"))}

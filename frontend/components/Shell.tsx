@@ -1,21 +1,29 @@
 "use client";
-import { Clock, FolderHeart, Home, Image as ImageIcon, LogOut, Map as MapIcon, Search, Settings, UploadCloud } from "lucide-react";
+import { Clock, FolderHeart, Home, Image as ImageIcon, LogOut, Map as MapIcon, Monitor, Moon, Search, Settings, Sun, UploadCloud } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 import { useUploads } from "@/lib/uploads";
 import LanguageSwitcher from "./LanguageSwitcher";
 import Logo from "./Logo";
 import { Spinner } from "./ui";
 
 const NAV = [
-  { href: "/", key: "nav.home", icon: Home }, { href: "/search", key: "nav.search", icon: Search }, { href: "/library", key: "nav.library", icon: ImageIcon },
+  { href: "/", key: "nav.home", icon: Home }, { href: "/search", key: "nav.search", icon: Search, kbd: "/" }, { href: "/library", key: "nav.library", icon: ImageIcon },
   { href: "/timeline", key: "nav.timeline", icon: Clock }, { href: "/map", key: "nav.map", icon: MapIcon },
   { href: "/collections", key: "nav.collections", icon: FolderHeart }, { href: "/uploads", key: "nav.uploads", icon: UploadCloud },
 ];
 const MOBILE = ["/", "/search", "/library", "/collections", "/uploads"];
+
+function ThemeButton() {
+  const { pref, cycle } = useTheme();
+  const Icon = pref === "dark" ? Moon : pref === "light" ? Sun : Monitor;
+  const label = `Theme: ${pref}`;
+  return <button onClick={cycle} className="btn-ghost !h-8 !w-8 !p-0" aria-label={label} title={label}><Icon className="h-4 w-4" strokeWidth={1.75} /></button>;
+}
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -42,43 +50,72 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     return () => { window.removeEventListener("dragenter", enter); window.removeEventListener("dragleave", leave); window.removeEventListener("dragover", over); window.removeEventListener("drop", drop); window.removeEventListener("keydown", key); };
   }, [addFiles, router, path]);
 
-  if (loading || !user) return <div className="flex h-screen items-center justify-center"><Spinner className="h-6 w-6 text-tide" /></div>;
+  if (loading || !user) return <div className="flex h-screen items-center justify-center"><Spinner className="h-5 w-5 text-ink-mute" /></div>;
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-ink/15 bg-paper/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-baseline gap-2" aria-label="Smriti home"><Logo size={22} /><span className="font-serif text-xl font-medium">Smriti</span><span className="hidden text-sm text-ink-faint sm:inline" lang="hi">स्मृति</span></Link>
-          <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Main">
-            {NAV.filter((n) => n.href !== "/").map(({ href, key }) => (
-              <Link key={href} href={href} aria-current={active(href) ? "page" : undefined}
-                className={`relative px-3 py-1.5 text-sm font-medium transition-colors ${active(href) ? "text-ink after:absolute after:inset-x-3 after:-bottom-[13px] after:h-0.5 after:bg-ink" : "text-ink-mute hover:text-ink"}`}>
-                {t(key)}{href === "/uploads" && busy > 0 && <span className="ml-1.5 rounded-[3px] bg-glow px-1.5 font-mono text-[11px] font-medium tabular-nums text-ink">{busy}</span>}
-              </Link>))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+    <div className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+      <aside className="sticky top-0 hidden h-screen flex-col border-r border-paper-line bg-paper-card px-3 pb-3 pt-4 lg:flex">
+        <Link href="/" className="flex h-9 items-center gap-2.5 rounded-md px-2" aria-label="Smriti home">
+          <Logo size={22} /><span className="font-serif text-[17px] font-medium">Smriti</span><span className="text-xs text-ink-faint" lang="hi">स्मृति</span>
+        </Link>
+
+        <nav className="mt-6 space-y-0.5" aria-label="Main">
+          {NAV.map(({ href, key, icon: Icon, kbd }) => {
+            const on = active(href);
+            return (
+              <Link key={href} href={href} aria-current={on ? "page" : undefined}
+                className={`flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors ${on ? "bg-paper-sunk font-medium text-ink" : "text-ink-soft hover:bg-paper-sunk/60 hover:text-ink"}`}>
+                <Icon className={`h-4 w-4 shrink-0 ${on ? "text-ink" : "text-ink-mute"}`} strokeWidth={1.75} />
+                <span className="flex-1 truncate">{t(key)}</span>
+                {href === "/uploads" && busy > 0 ? <span className="font-mono text-xs tabular-nums text-ink-mute">{busy}</span>
+                  : on ? <span className="h-1.5 w-1.5 rounded-[1px] bg-glow" aria-hidden />
+                  : kbd ? <span className="kbd">{kbd}</span> : null}
+              </Link>);
+          })}
+        </nav>
+
+        <div className="mt-auto border-t border-paper-line pt-3">
+          <Link href="/settings" className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 transition-colors ${active("/settings") ? "bg-paper-sunk" : "hover:bg-paper-sunk/60"}`} title={user.email}>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-paper-sunk text-xs font-medium text-ink-soft">{(user.display_name || user.email).slice(0, 1).toUpperCase()}</span>
+            <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{user.display_name || user.email}</span><span className="block truncate text-xs text-ink-mute">{t("nav.settings")}</span></span>
+            <Settings className="h-4 w-4 shrink-0 text-ink-mute" strokeWidth={1.75} />
+          </Link>
+          <div className="mt-2 flex items-center gap-1 px-1">
             <LanguageSwitcher compact />
-            <Link href="/settings" className={`btn-ghost !p-2 ${active("/settings") ? "!text-ink" : ""}`} aria-label={t("nav.settings")} title={`${user.display_name} • ${user.email}`}><Settings className="h-[18px] w-[18px]" /></Link>
-            <button onClick={logout} className="btn-ghost !p-2" aria-label={t("nav.signOut")} title={t("nav.signOut")}><LogOut className="h-[18px] w-[18px]" /></button>
+            <span className="flex-1" />
+            <ThemeButton />
+            <button onClick={logout} className="btn-ghost !h-8 !w-8 !p-0" aria-label={t("nav.signOut")} title={t("nav.signOut")}><LogOut className="h-4 w-4" strokeWidth={1.75} /></button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="min-w-0 pb-16 lg:pb-0">{children}</main>
+      <div className="min-w-0">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-paper-line bg-paper/90 px-4 backdrop-blur lg:hidden">
+          <Link href="/" className="flex items-center gap-2" aria-label="Smriti home"><Logo size={22} /><span className="font-serif text-[17px] font-medium">Smriti</span></Link>
+          <span className="flex-1" />
+          <ThemeButton />
+          <Link href="/settings" className="btn-ghost !h-8 !w-8 !p-0" aria-label={t("nav.settings")}><Settings className="h-4 w-4" strokeWidth={1.75} /></Link>
+        </header>
+        <main className="pb-20 lg:pb-0">{children}</main>
+      </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-ink/15 bg-paper lg:hidden" aria-label="Main">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-paper-line bg-paper-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Main">
         {NAV.filter((n) => MOBILE.includes(n.href)).map(({ href, key, icon: Icon }) => (
-          <Link key={href} href={href} className={`relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${active(href) ? "text-ink" : "text-ink-mute"}`}>
-            {active(href) && <span className="absolute inset-x-5 top-0 h-0.5 bg-ink" />}
-            <Icon className="h-5 w-5" />{t(key)}{href === "/uploads" && busy > 0 && <span className="absolute right-[28%] top-1 h-2 w-2 bg-glow" />}
+          <Link key={href} href={href} className={`relative flex flex-col items-center gap-1 py-2 text-[11px] font-medium ${active(href) ? "text-ink" : "text-ink-mute"}`}>
+            <Icon className="h-5 w-5" strokeWidth={1.75} />{t(key)}
+            {active(href) && <span className="absolute top-0 h-0.5 w-6 bg-glow" aria-hidden />}
+            {href === "/uploads" && busy > 0 && <span className="absolute right-[30%] top-1.5 h-1.5 w-1.5 rounded-[1px] bg-glow" />}
           </Link>))}
       </nav>
 
-      {drag && (<div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-ink/90 text-white"><div className="rounded-2xl border-2 border-dashed border-white/70 px-12 py-10 text-center"><UploadCloud className="mx-auto h-10 w-10" /><p className="mt-3 font-serif text-lg font-medium">{t("up.drop")}</p></div></div>)}
+      {drag && (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-night/85 text-white">
+          <div className="rounded-2xl border border-dashed border-white/40 px-12 py-10 text-center"><UploadCloud className="mx-auto h-8 w-8" strokeWidth={1.5} /><p className="mt-3 font-serif text-xl">{t("up.drop")}</p></div>
+        </div>)}
 
       <div className="pointer-events-none fixed bottom-20 right-4 z-[60] flex flex-col gap-2 lg:bottom-6" aria-live="polite">
-        {toasts.map((x) => (<div key={x.id} className={`pointer-events-auto max-w-sm rounded-lg px-4 py-2.5 text-sm shadow-lift ${x.kind === "error" ? "bg-danger text-white" : "bg-ink text-white"}`}>{x.msg}</div>))}
+        {toasts.map((x) => (<div key={x.id} className={`pointer-events-auto max-w-sm animate-rise rounded-lg px-4 py-2.5 text-sm shadow-lift ${x.kind === "error" ? "bg-danger text-white" : "bg-night text-white"}`}>{x.msg}</div>))}
       </div>
     </div>
   );

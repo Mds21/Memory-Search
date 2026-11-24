@@ -43,7 +43,7 @@ export default function Library() {
   const kinds = [["", "lib.all"], ["photo", "search.photos"], ["video", "search.videos"], ["document", "search.documents"]];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="h-page">{t("lib.title")} <span className="text-base font-normal text-ink-mute">{total}</span></h1>
         <div className="flex items-center gap-2">
@@ -64,10 +64,10 @@ export default function Library() {
         {items.length < total && <div className="mt-6 text-center"><button className="btn-outline" onClick={loadMore} disabled={more}>{more ? <Spinner /> : null}{t("lib.loadMore")}</button></div>}
       </>)}
       {sel && sel.size > 0 && (
-        <div className="fixed inset-x-0 bottom-16 z-30 mx-auto flex w-fit items-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-sm text-white shadow-lift lg:bottom-6">
+        <div className="fixed inset-x-0 bottom-16 z-30 mx-auto flex w-fit items-center gap-2 animate-rise rounded-xl bg-night px-4 py-2 text-sm text-white shadow-lift lg:bottom-6">
           <span>{sel.size} {t("lib.selected")}</span>
-          <button className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={() => setPick([...sel])}><FolderPlus className="h-4 w-4" />{t("lib.addTo")}</button>
-          <button className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={del}><Trash2 className="h-4 w-4" />{t("lib.delete")}</button>
+          <button className="btn-ghost !text-white hover:!bg-white/10" onClick={() => setPick([...sel])}><FolderPlus className="h-4 w-4" />{t("lib.addTo")}</button>
+          <button className="btn-ghost !text-white hover:!bg-white/10" onClick={del}><Trash2 className="h-4 w-4" />{t("lib.delete")}</button>
         </div>)}
       <CollectionPicker ids={pick} onClose={() => setPick(null)} onDone={() => setSel(null)} />
       {viewer.node}

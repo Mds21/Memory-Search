@@ -47,7 +47,7 @@ function MediaView() {
   const moments = chunks.filter((c) => c.start_ms != null);
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="min-w-0 space-y-6">
         <div className="overflow-hidden rounded-xl bg-ink">
           {a.kind === "video" && a.video_url ? <video ref={vid} src={abs(a.video_url)} poster={abs(a.preview_url)} controls className="max-h-[70vh] w-full" />
