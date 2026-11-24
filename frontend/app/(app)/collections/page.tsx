@@ -18,8 +18,8 @@ export default function Collections() {
     <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-8 sm:py-14">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
         <div><h1 className="h-page">{t("col.title")}</h1></div>
-        <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); create(); }}>
-          <input className="input !w-60" placeholder={t("col.name")} value={name} onChange={(e) => setName(e.target.value)} />
+        <form className="flex w-full min-w-0 gap-2 sm:w-auto" onSubmit={(e) => { e.preventDefault(); create(); }}>
+          <input className="input min-w-0 flex-1 sm:!w-60 sm:flex-none" placeholder={t("col.name")} value={name} onChange={(e) => setName(e.target.value)} />
           <button className="btn-primary" disabled={!name.trim()}><Plus className="h-4 w-4" strokeWidth={1.5} />{t("col.new")}</button>
         </form>
       </div>

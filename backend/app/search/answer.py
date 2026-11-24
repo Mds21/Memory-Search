@@ -8,15 +8,15 @@ from ..adapters.embeddings import tokenize
 from .query_parser import STOP, ParsedQuery
 
 T = {
-    "en": {"found": "Found {n} results ({b}). Best matches are shown first.", "none": "I couldn't find anything matching that. Try different words or remove a filter.",
+    "en": {"here": "Here's what I found in your library:", "found": "Found {n} results ({b}). Best matches are shown first.", "none": "I couldn't find anything matching that. Try different words or remove a filter.",
            "nodoc": "I couldn't find this in your documents.", "based": "From your documents:", "photo": "photos", "video": "videos", "document": "documents"},
-    "hi": {"found": "{n} परिणाम मिले ({b})। सबसे उपयुक्त पहले दिखाए गए हैं।", "none": "इससे मेल खाता कुछ नहीं मिला। दूसरे शब्द आज़माएँ या कोई फ़िल्टर हटाएँ।",
+    "hi": {"here": "आपकी लाइब्रेरी में यह मिला:", "found": "{n} परिणाम मिले ({b})। सबसे उपयुक्त पहले दिखाए गए हैं।", "none": "इससे मेल खाता कुछ नहीं मिला। दूसरे शब्द आज़माएँ या कोई फ़िल्टर हटाएँ।",
            "nodoc": "यह जानकारी मुझे आपके दस्तावेज़ों में नहीं मिली।", "based": "आपके दस्तावेज़ों से:", "photo": "फोटो", "video": "वीडियो", "document": "दस्तावेज़"},
-    "mr": {"found": "{n} निकाल सापडले ({b}). सर्वात योग्य आधी दाखवले आहेत.", "none": "यास जुळणारे काहीही सापडले नाही. वेगळे शब्द वापरा किंवा फिल्टर काढा.",
+    "mr": {"here": "तुमच्या लायब्ररीत हे सापडले:", "found": "{n} निकाल सापडले ({b}). सर्वात योग्य आधी दाखवले आहेत.", "none": "यास जुळणारे काहीही सापडले नाही. वेगळे शब्द वापरा किंवा फिल्टर काढा.",
            "nodoc": "ही माहिती तुमच्या दस्तऐवजांमध्ये सापडली नाही.", "based": "तुमच्या दस्तऐवजांमधून:", "photo": "फोटो", "video": "व्हिडिओ", "document": "दस्तऐवज"},
-    "ta": {"found": "{n} முடிவுகள் கிடைத்தன ({b}). மிகப் பொருத்தமானவை முதலில் காட்டப்பட்டுள்ளன.", "none": "பொருந்தும் எதுவும் கிடைக்கவில்லை. வேறு சொற்களை முயலவும் அல்லது வடிகட்டியை நீக்கவும்.",
+    "ta": {"here": "உங்கள் நூலகத்தில் கிடைத்தவை:", "found": "{n} முடிவுகள் கிடைத்தன ({b}). மிகப் பொருத்தமானவை முதலில் காட்டப்பட்டுள்ளன.", "none": "பொருந்தும் எதுவும் கிடைக்கவில்லை. வேறு சொற்களை முயலவும் அல்லது வடிகட்டியை நீக்கவும்.",
            "nodoc": "இதை உங்கள் ஆவணங்களில் கண்டுபிடிக்க முடியவில்லை.", "based": "உங்கள் ஆவணங்களில் இருந்து:", "photo": "புகைப்படங்கள்", "video": "காணொளிகள்", "document": "ஆவணங்கள்"},
-    "es": {"found": "Encontré {n} resultados ({b}). Los mejores aparecen primero.", "none": "No encontré nada que coincida. Prueba otras palabras o quita un filtro.",
+    "es": {"here": "Esto es lo que encontré en tu biblioteca:", "found": "Encontré {n} resultados ({b}). Los mejores aparecen primero.", "none": "No encontré nada que coincida. Prueba otras palabras o quita un filtro.",
            "nodoc": "No encontré esto en tus documentos.", "based": "De tus documentos:", "photo": "fotos", "video": "vídeos", "document": "documentos"},
 }
 
@@ -50,6 +50,9 @@ def summary_line(out, lang: str) -> str:
 def build_answer(pq: ParsedQuery, out, lang: str, llm, *, max_sources: int = 6) -> tuple[Iterator[str], list[dict]]:
     """Returns (token iterator, citations). Citations are decided up-front so the UI can show them immediately."""
     t = _tr(lang)
+    known = _from_understanding(pq, out, t)
+    if known:
+        return known, []
     sources = out.rag_chunks[:max_sources]
     wants_answer = pq.intent in ("answer_question", "find_document", "mixed") and sources
 
@@ -99,3 +102,35 @@ def _extractive(pq, sources, cites, t):
         for w in re.findall(r"\S+\s*", text):
             yield w
     return gen(), cites
+
+
+def _from_understanding(pq, out, t):
+    """Offline answer from what each file was understood to be ("PAN card · Uppula Varun Kumar — PAN number: XXXXXX924A")
+    rather than raw OCR text. Only for top results that were recognised; ID numbers stay masked unless asked for."""
+    from .converse import mask_ids
+    from .smalltalk import asks_for_number
+    if not out.cards or out.cards[0].get("kind") == "document":
+        return None  # documents have real text to quote: the extractive answer below does better
+    top = [c for c in out.cards[:3] if c.get("doc_label") or c.get("shows") or c.get("facts")]
+    if not top:
+        return None
+    terms = {w for w in tokenize(pq.raw or "") if w not in STOP and len(w) > 2}
+    parts = []
+    for c in top:
+        facts = [f for f in c.get("facts") or [] if f.get("label") and not str(f.get("key", "")).startswith("kv_")]
+        asked = [f for f in facts if terms & set(tokenize(f["label"]))]
+        show = asked or facts[:2]
+        bit = c.get("display_title") or c.get("title") or "file"
+        if show:
+            bit += " (" + "; ".join(f"{f['label']}: {f['value']}" for f in show) + ")"
+        elif c.get("shows"):
+            bit += f" ({c['shows'][0]})"
+        parts.append(bit)
+    text = t.get("here", T["en"]["here"]) + " " + " · ".join(parts) + "."
+    if not asks_for_number(pq.raw or ""):
+        text = mask_ids(text)
+
+    def gen():
+        for w in re.findall(r"\S+\s*", text):
+            yield w
+    return gen()

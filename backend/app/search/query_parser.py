@@ -264,16 +264,44 @@ def merge_followup(new: ParsedQuery, prev: ParsedQuery) -> ParsedQuery:
     return out
 
 
+def _scripts(text: str) -> set[str]:
+    """Rough writing systems in a string: latin, devanagari, tamil, cjk, other."""
+    out = set()
+    for ch in text:
+        o = ord(ch)
+        if ch.isascii() and ch.isalpha():
+            out.add("latin")
+        elif 0x0900 <= o <= 0x097F:
+            out.add("devanagari")
+        elif 0x0B80 <= o <= 0x0BFF:
+            out.add("tamil")
+        elif 0x3040 <= o <= 0x30FF or 0x4E00 <= o <= 0x9FFF or 0xAC00 <= o <= 0xD7AF:
+            out.add("cjk")
+        elif ch.isalpha() and o > 0x24F:
+            out.add("other")
+    return out
+
+
 def llm_enrich(q: ParsedQuery, llm) -> ParsedQuery:
-    """Optional: let an LLM rewrite the query and add an English translation. Dates/filters stay rule-based."""
+    """Optional: let an LLM tidy the query and add an English translation. Dates/filters stay rule-based."""
     try:
-        sys = ("You rewrite search queries for a personal photo/video/document search. Reply ONLY with JSON: "
-               '{"semantic_query": "...", "semantic_query_en": "English translation"} '
-               "Keep it short, no dates, no file types.")
-        d = parse_json_loose(llm.complete(sys, q.semantic_query or q.raw, json_mode=True))
+        sys = ("You turn a message to a personal photo/video/document search into search terms. Reply ONLY with JSON: "
+               '{"semantic_query": "...", "semantic_query_en": "..."}. '
+               "semantic_query: the thing being looked for, in the SAME language and script as the message, without request "
+               "words (share, show, send, find, open, do I have, any, my, please) or library words (library, bucket, files, "
+               "gallery, storage). semantic_query_en: the same in English. Keep it short, no dates, no file types. "
+               'Examples: "share signature" -> {"semantic_query": "signature", "semantic_query_en": "signature"}; '
+               '"do i have any robot image?" -> {"semantic_query": "robot", "semantic_query_en": "robot"}; '
+               '"मेरा आधार कार्ड भेजो" -> {"semantic_query": "आधार कार्ड", "semantic_query_en": "aadhaar card"}')
+        d = parse_json_loose(llm.complete(sys, (q.semantic_query if q.followup else q.raw) or q.semantic_query, json_mode=True))
         if d:
-            q.semantic_query = str(d.get("semantic_query") or q.semantic_query)[:300]
-            q.semantic_query_en = str(d.get("semantic_query_en") or "")[:300] or None
+            sem = str(d.get("semantic_query") or "").strip()[:300]
+            en = str(d.get("semantic_query_en") or "").strip()[:300]
+            # models sometimes answer in an unrelated language (Korean for "share signature"): keep the rule-based terms then
+            if sem and _scripts(sem) <= (_scripts(q.raw) | {"latin"}):
+                q.semantic_query = sem
+            if en and _scripts(en) <= {"latin"}:
+                q.semantic_query_en = en
     except Exception:
         pass  # fall back to the rule-based parse
     return q

@@ -108,7 +108,13 @@ def _snippet(text: str | None, terms: list[str], width: int = 240) -> str:
 
 
 def asset_card(a: Asset, tags: list[str] | None = None) -> dict:
+    m = a.meta or {}
     return {
+        # what the file was understood to be (understanding/): shown in the UI and given to the chat model
+        "display_title": m.get("auto_title") or a.filename, "auto_caption": m.get("auto_caption"),
+        "doc_label": m.get("doc_label"), "doc_category": m.get("doc_category"),
+        "people": list((m.get("people") or {}).get("holder") or []), "facts": m.get("facts") or [],
+        "shows": m.get("shows") or [],
         "asset_id": a.id, "kind": a.kind, "title": a.filename, "status": a.status, "status_detail": a.status_detail,
         "thumb_url": media_url(a.id, "thumb") if a.has_thumb else None,
         "preview_url": media_url(a.id, "preview") if a.has_thumb else None,

@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from ..adapters import registry
 from ..tools import find as find_tool
 from ..models import Asset
+from ..understanding import understand
 from .common import add_chunk, clear_derived, detect_lang, upsert_tags
 from .photo import describe_and_index, make_thumbs  # noqa: F401
 
@@ -229,5 +230,7 @@ def ingest_document(db: Session, asset: Asset, src: Path) -> None:
             add_chunk(db, asset, "doc_text", part, embed_text=f"{title} > page {pno}\n{part}", page=pno, language=lang)
     if empty == len(pages):
         raise ValueError("No readable text found (scan too poor for OCR, or OCR language pack missing).")
-    add_chunk(db, asset, "doc_text", summarize(title, pages), meta={"is_summary": True}, language=asset.language)
+    summary = summarize(title, pages)
+    add_chunk(db, asset, "doc_text", summary, meta={"is_summary": True}, language=asset.language)
     upsert_tags(db, asset, [ext.lstrip("."), "document"])
+    understand(db, asset, text=full[:20000], summary=summary)  # what kind of document, whose, key facts

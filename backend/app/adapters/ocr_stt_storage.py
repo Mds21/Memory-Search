@@ -31,14 +31,10 @@ class TesseractOCR(OCREngine):
         except Exception:
             return ""
 
-    @property
-    def available(self) -> bool:
-        return bool(self.bin and self.langs)
-
     def ocr(self, image_path: Path, langs: list[str] | None = None, psm: int = 3, min_conf: float = 0) -> str:
-        """Text in an image. min_conf > 0 keeps only words Tesseract is at least that sure of (0-100), so an ordinary
-        photo with no writing yields nothing instead of stray characters."""
-        if not self.available:
+        """Tesseract on an image file (scanned PDF pages). min_conf > 0 keeps only words Tesseract is at least that sure
+        of (0-100), so an ordinary photo with no writing yields nothing instead of stray characters."""
+        if not (self.bin and self.langs):
             return ""
         use = "+".join(langs or self.langs)
         if not min_conf:
@@ -64,17 +60,86 @@ class TesseractOCR(OCREngine):
         return chr(10).join(kept)
 
     def ocr_image(self, img, quick: bool = False, langs: list[str] | None = None, min_conf: float = 0) -> str:
-        """OCR a PIL image (e.g. a picture inside a Word file or slide). quick: English plus Hindi only, smaller image."""
-        if not self.available:
-            return ""
-        import tempfile
-        img = img.convert("L")
-        img.thumbnail((1400, 1400) if quick else (2400, 2400))
-        with tempfile.TemporaryDirectory() as td:
-            p = Path(td) / "page.png"
-            img.save(p)
-            use = langs or ([l for l in ("eng", "hin") if l in self.langs] or self.langs if quick else None)
-            return self.ocr(p, use, min_conf=min_conf)
+        """OCR a PIL image (a photo, or a picture inside a Word file or slide). quick: English plus Hindi only, smaller.
+
+        Tesseract reads clean scans well but often finds nothing in phone photos of cards (small text on patterned
+        backgrounds). RapidOCR, when installed, reads those; Tesseract still supplies Hindi/Marathi/Tamil lines, which
+        RapidOCR's models don't cover. The longer Latin reading wins."""
+        tess = ""
+        if self.bin and self.langs:
+            import tempfile
+            g = img.convert("L")
+            g.thumbnail((1400, 1400) if quick else (2400, 2400))
+            with tempfile.TemporaryDirectory() as td:
+                p = Path(td) / "page.png"
+                g.save(p)
+                use = langs or ([l for l in ("eng", "hin") if l in self.langs] or self.langs if quick else None)
+                tess = self.ocr(p, use, min_conf=min_conf)
+        rapid = _rapid_text(img, min_score=0.6 if min_conf else 0.5)
+        return _merge_readings(tess, rapid)
+
+    @property
+    def available(self) -> bool:  # either engine is enough for photos
+        return bool(self.bin and self.langs) or _rapid() is not None
+
+
+_RAPID: dict = {}
+_RAPID_LOCK = __import__("threading").Lock()
+
+
+def _rapid():
+    """Shared RapidOCR engine (onnxruntime sessions are thread-safe), or None when it isn't installed."""
+    if "e" not in _RAPID:
+        with _RAPID_LOCK:
+            if "e" not in _RAPID:
+                try:
+                    import logging
+                    from rapidocr_onnxruntime import RapidOCR
+                    logging.getLogger("RapidOCR").setLevel(logging.ERROR)
+                    _RAPID["e"] = RapidOCR()
+                except Exception:  # noqa: BLE001 - optional dependency
+                    _RAPID["e"] = None
+    return _RAPID["e"]
+
+
+def _is_cjk(ch: str) -> bool:
+    o = ord(ch)
+    return 0x3000 <= o <= 0x30FF or 0x4E00 <= o <= 0x9FFF or 0xFF00 <= o <= 0xFFEF or 0xAC00 <= o <= 0xD7AF
+
+
+def _real_words(text: str) -> int:
+    return sum(1 for w in text.split() if sum(ch.isalpha() for ch in w) >= 3)
+
+
+def _rapid_text(img, min_score: float) -> str:
+    eng = _rapid()
+    if eng is None:
+        return ""
+    try:
+        import numpy as np
+        im = img.convert("RGB")
+        im.thumbnail((1600, 1600))
+        res, _ = eng(np.asarray(im))
+    except Exception:  # noqa: BLE001
+        return ""
+    lines = []
+    for _box, text, score in res or []:
+        # its models are English/Chinese: Devanagari comes out as stray Chinese characters, so drop those
+        text = "".join(" " if _is_cjk(ch) else ch for ch in str(text)).strip()
+        if float(score) >= min_score and sum(ch.isalnum() for ch in text) >= 2:
+            lines.append(" ".join(text.split()))
+    out = chr(10).join(lines)
+    return out if _real_words(out) >= 2 else ""
+
+
+def _merge_readings(tess: str, rapid: str) -> str:
+    if not rapid:
+        return tess
+    latin_tess = " ".join(w for w in tess.split() if all(ord(ch) < 0x250 for ch in w))
+    if _real_words(latin_tess) > _real_words(rapid) * 1.2:
+        return tess
+    indic = [ln for ln in tess.splitlines() if any(0x0900 <= ord(ch) <= 0x0DFF for ch in ln)]
+    return chr(10).join([rapid, *indic]) if indic else rapid
 
 
 class NoSTT(STT):

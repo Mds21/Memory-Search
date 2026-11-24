@@ -3,7 +3,7 @@ import { FileText, Film, Pause, Play, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { abs } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import type { Asset } from "@/lib/types";
+import { nameOf, type Asset } from "@/lib/types";
 import { fmtDate } from "./ui";
 
 const STEP_MS = 4500;
@@ -70,7 +70,7 @@ export default function Slideshow({ items, title, start = 0, onClose }: { items:
       </div>
 
       <div className="pointer-events-none px-6 pb-6 pt-3">
-        <p className="truncate text-[13px] text-white/90">{a.caption_user || a.title}</p>
+        <p className="truncate text-[13px] text-white/90">{nameOf(a)}</p>
         {meta && <p className="mt-0.5 text-[11px] uppercase tracking-label text-white/50">{meta}</p>}
       </div>
       <style>{`@keyframes slide-progress { from { transform: scaleX(0) } to { transform: scaleX(1) } }

@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 
-RELATION = re.compile(r"\b(?:father'?s?\s*name|mother'?s?\s*name|husband'?s?\s*name|s/o|d/o|w/o|c/o|son of|daughter of|wife of)\b\s*[:/|.\-]*\s*(?P<rest>.*)$", re.I)
+RELATION = re.compile(r"(?:\b(?:fa[a-z]{0,3}er|mo[a-z]{0,3}er|hus[a-z]{0,4})'?s?\s*n[a-z]{0,3}e?\b|\b(?:s/o|d/o|w/o|c/o|son of|daughter of|wife of)\b|पिता\s*का\s*नाम|पति\s*का\s*नाम|माता\s*का\s*नाम)\s*[:/|.\-]*\s*(?P<rest>.*)$", re.I)  # tolerant of OCR misreads ("Faher's Nae")
 LABEL_WORDS = ("name", "naam", "holder", "to")
 BOILER = set("""
 government india govt republic income tax department permanent account number card unique identification authority aadhaar

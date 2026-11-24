@@ -14,6 +14,9 @@ SCENE_TITLE = {"signature": "Signature", "beach": "Beach", "sunset": "Sunset", "
 SCENE_PHRASE = {"signature": "a handwritten signature", "beach": "a beach with sea and sand", "sunset": "a sunset sky",
                 "snow": "a snowy scene", "greenery": "trees and greenery", "night": "a night-time scene", "sea": "open water",
                 "sky": "open sky", "screenshot": "a screenshot", "document": "a document or card with printed text"}
+for _key, (_prompts, _tags, _title, _phrase) in __import__("app.understanding.clip_labels", fromlist=["LABELS"]).LABELS.items():
+    SCENE_TITLE.setdefault(_key, _title)  # what the image model can name (signature, robot, ID card ...)
+    SCENE_PHRASE.setdefault(_key, _phrase)
 JUNK = {"img", "image", "images", "photo", "pic", "dsc", "dscn", "pxl", "vid", "video", "mov", "whatsapp", "screenshot", "download",
         "downloads", "file", "files", "scan", "scanned", "untitled", "new", "document", "doc", "copy", "final", "edited", "optimized",
         "compressed", "resized", "scaled", "thumbnail", "unsplash", "pexels", "pixabay", "original", "export", "camera", "wa", "at", "pm", "am"}
@@ -58,8 +61,10 @@ def make_title(asset, *, doc_label: str | None, holder: str | None, cues: dict[s
     scene = next((k for k in ranked(cues) if k in SCENE_TITLE and cues[k] >= 0.5 and k != "document"), None)
     name = meaningful_name(asset.filename)
     head = SCENE_TITLE[scene] if scene else (name or KIND_WORD.get(asset.kind, "File"))
-    if name and scene and SCENE_TITLE[scene].lower() not in name.lower():
-        head = name  # a real name the person gave the file beats a guessed scene
+    downloaded = re.search(r"[0-9a-f]{8,}|unsplash|pexels|pixabay|shutterstock|freepik|(?=[A-Za-z]*\d)(?=\d*[A-Za-z])[A-Za-z\d]{8,}",
+                           Path(asset.filename).stem, re.I)
+    if name and scene and SCENE_TITLE[scene].lower() not in name.lower() and not downloaded:
+        head = name  # a real name the person gave the file beats a guessed scene (not a stock-site download name)
     extras = [x for x in ((asset.place_name or "").split(",")[0] or None, _month(asset.taken_at)) if x and x.lower() not in head.lower()]
     return " · ".join([head, *extras])
 

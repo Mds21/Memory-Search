@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { abs, api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import type { Asset } from "@/lib/types";
+import { nameOf, type Asset } from "@/lib/types";
 import DownloadMenu from "./DownloadMenu";
 import { fmtDate } from "./ui";
 
@@ -40,7 +40,7 @@ export default function Lightbox({ items, index, onIndex, onClose }: { items: As
       onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
       onTouchEnd={(e) => { if (touch.current == null || zoom) return; const dx = e.changedTouches[0].clientX - touch.current; if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1); touch.current = null; }}>
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="min-w-0"><p className="truncate text-sm font-medium">{a.caption_user || a.title}</p>
+        <div className="min-w-0"><p className="truncate text-sm font-medium" title={a.title}>{nameOf(a)}</p>
           <p className="truncate text-xs text-white/60">{[fmtDate(a.taken_at, lang), a.place].filter(Boolean).join(" • ")}</p></div>
         <div className="flex items-center gap-1">
           {a.kind === "photo" && <button className="btn-ghost !text-white hover:!bg-white/10" onClick={() => setZoom((z) => !z)} aria-label="Zoom"><ZoomIn className="h-4 w-4" /></button>}

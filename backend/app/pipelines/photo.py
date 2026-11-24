@@ -9,6 +9,8 @@ from .. import geo
 from ..adapters import registry
 from ..config import get_settings
 from ..models import Asset
+from ..adapters.embeddings import from_blob
+from ..understanding import clip_labels, understand, visual
 from .common import add_chunk, add_image_chunk, clear_derived, date_from_filename, detect_lang, upsert_tags
 
 try:  # optional HEIC support
@@ -74,25 +76,39 @@ def describe_and_index(db: Session, asset: Asset, img: Image.Image, *, chunk_typ
         stem = Path(asset.filename).stem.replace("_", " ").replace("-", " ")
         hint = "" if stem.replace(" ", "").isdigit() or stem.upper().startswith(("IMG", "DSC", "PXL")) else stem
     desc = registry.vlm().describe(data, hint=hint)
+    img_chunk = add_image_chunk(db, asset, data, chunk_type="video_frame" if chunk_type == "video_frame" else "image", **kw)
 
-    parts = [desc.caption]
+    raw_text = desc.visible_text or ""
+    if not raw_text and cfg.ocr_photos and registry.ocr().available:
+        # own temp file per call (workers run in parallel); confident words only, so plain photos add no noise
+        raw_text = registry.ocr().ocr_image(img, min_conf=cfg.ocr_min_conf)
+    visible = " ".join(raw_text.split())
+
+    # What the picture shows: the image model's labels ("a handwritten signature", "a robot"), else pixel heuristics
+    found = clip_labels.labels(from_blob(img_chunk.image_embedding), registry.image_embedder()) if img_chunk is not None else []
+    cues = clip_labels.as_cues(found) if found else visual.analyze(img, ocr_text=raw_text).scores
+    shows = [clip_labels.LABELS[k][3] if k in clip_labels.LABELS else visual.CUE_TEXT[k][1] for k in cues
+             if k in clip_labels.LABELS or k in visual.CUE_TEXT]
+    label_tags = [t for k in cues for t in (clip_labels.LABELS[k][1] if k in clip_labels.LABELS else visual.CUE_TEXT.get(k, ([],))[0])]
+    desc.tags = list(dict.fromkeys([*label_tags, *desc.tags]))
+    if "id_card" in cues:
+        cues.setdefault("document", cues["id_card"])  # document types keyed on "document" apply to cards too
+
+    parts = [f"Shows {', '.join(dict.fromkeys(shows))}." if shows else "", desc.caption]
     if asset.place_name:
         parts.append(f"Taken in {asset.place_name}.")
     if asset.taken_at:
         parts.append(f"Date: {asset.taken_at:%B %Y}.")
     if desc.objects:
         parts.append("Objects: " + ", ".join(desc.objects) + ".")
-    text = " ".join(parts)
+    text = " ".join(p for p in parts if p)
     add_chunk(db, asset, chunk_type, text, embed_text=text + " " + " ".join(desc.tags), meta={"tags": desc.tags}, **kw)
-    add_image_chunk(db, asset, data, chunk_type="video_frame" if chunk_type == "video_frame" else "image", **kw)
-
-    visible = desc.visible_text or ""
-    if not visible and cfg.ocr_photos and registry.ocr().available:
-        # own temp file per call (workers run in parallel); confident words only, so plain photos add no noise
-        visible = registry.ocr().ocr_image(img, min_conf=cfg.ocr_min_conf)
-    visible = " ".join(visible.split())
     if len(visible) >= 8:
         add_chunk(db, asset, "ocr_text", visible, language=detect_lang(visible), **kw)
+
+    if chunk_type == "caption":  # the photo itself (not a video frame): what it is and whose
+        asset.meta = {**(asset.meta or {}), "labels": list(cues), "shows": list(dict.fromkeys(shows))}
+        understand(db, asset, text=raw_text, visual_scores=cues)
     return desc
 
 

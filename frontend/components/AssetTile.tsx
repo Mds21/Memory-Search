@@ -2,7 +2,7 @@
 import { Check, FileText, Play } from "lucide-react";
 import { abs } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import type { Asset } from "@/lib/types";
+import { nameOf, type Asset } from "@/lib/types";
 import { highlight } from "@/lib/util";
 import { Spinner, fmtDuration } from "./ui";
 
@@ -13,7 +13,7 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
   const pending = a.status === "queued" || a.status === "processing";
   const click = () => (selectMode ? onSelect?.(a) : onOpen(a));
   const ratio = a.kind === "document" ? 3 / 4 : a.width && a.height ? a.width / a.height : 4 / 3;
-  const label = a.caption_user || a.title;
+  const label = nameOf(a);
 
   return (
     <button onClick={click} aria-label={label} aria-pressed={selectMode ? !!selected : undefined}
@@ -33,7 +33,7 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
         <p className="mt-2 truncate text-[11px] uppercase tracking-[0.08em] text-ink-mute">{[a.place, a.taken_at ? new Date(a.taken_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : null].filter(Boolean).join(", ") || <span className="text-ink-faint">{label}</span>}</p>)}
       {(a.kind === "document" || (a.snippet && terms.length > 0 && a.match?.type === "transcript")) && (
         <div className="pt-2.5">
-          <p className="truncate text-[12px] font-medium uppercase tracking-[0.08em]">{a.title}</p>
+          <p className="truncate text-[12px] font-medium uppercase tracking-[0.08em]" title={a.title}>{nameOf(a)}</p>
           {a.snippet && <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-ink-mute">{highlight(a.snippet, terms)}</p>}
         </div>)}
       {a.status === "failed" && a.status_detail && <p className="pt-1 text-xs text-danger">{a.status_detail}</p>}

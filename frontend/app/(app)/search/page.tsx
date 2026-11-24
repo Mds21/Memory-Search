@@ -110,7 +110,7 @@ function SearchView() {
   const cite = (c: Citation) => (c.start_ms != null ? `/media/${c.asset_id}?t=${c.start_ms}` : `/documents/${c.asset_id}${c.page ? `?page=${c.page}` : ""}`);
 
   // Citations look like [S1]; some models write [ S1 ] with (thin) spaces, so match loosely.
-  const renderText = (m: Msg) => m.text.split(/(\[\s*S\s*\d+\s*\])/g).map((part, i) => {
+  const renderText = (m: Msg) => m.text.replace(/\s*\[(?:the\s+)?library[_ ]overview\]/gi, "").split(/(\[\s*S\s*\d+\s*\])/g).map((part, i) => {
     const label = /^\[\s*S\s*\d+\s*\]$/.test(part) ? part.replace(/[\[\]\s]/g, "") : null;
     const c = label ? m.citations?.find((x) => x.label === label) : undefined;
     if (!c) return <span key={i}>{part}</span>;
@@ -120,13 +120,13 @@ function SearchView() {
   });
 
   return (
-    <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-10 sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,38rem)_minmax(0,1fr)]">
-      <section className="relative flex min-h-[40vh] flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]" aria-label="Chat">
-        <div className="mb-6 flex items-start justify-between gap-3"><h1 className="h-page">{t("nav.search")}</h1>
+    <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-10 px-4 py-10 sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,38rem)_minmax(0,1fr)]">
+      <section className="relative flex min-h-[40vh] min-w-0 flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]" aria-label="Chat">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3"><h1 className="h-page">{t("nav.search")}</h1>
           <div className="flex items-center gap-1">
-            <button className={`btn-ghost ${showRecent ? "!bg-paper-sunk !text-ink" : ""}`} onClick={() => { setShowRecent((v) => !v); if (!showRecent) chats.reload(); }} aria-expanded={showRecent}>
-              <History className="h-4 w-4" strokeWidth={1.75} />{t("chat.recent")}{chats.items?.length ? <span className="tabular-nums text-ink-faint">{chats.items.length}</span> : null}</button>
-            {msgs.length > 0 && <button className="btn-ghost" onClick={reset}><MessageSquarePlus className="h-4 w-4" strokeWidth={1.75} />{t("search.new")}</button>}
+            <button className={`btn-ghost ${showRecent ? "!bg-paper-sunk !text-ink" : ""}`} onClick={() => { setShowRecent((v) => !v); if (!showRecent) chats.reload(); }} aria-expanded={showRecent} aria-label={t("chat.recent")} title={t("chat.recent")}>
+              <History className="h-4 w-4" strokeWidth={1.75} /><span className="hidden sm:inline">{t("chat.recent")}</span>{chats.items?.length ? <span className="tabular-nums text-ink-faint">{chats.items.length}</span> : null}</button>
+            {msgs.length > 0 && <button className="btn-ghost" onClick={reset} aria-label={t("search.new")} title={t("search.new")}><MessageSquarePlus className="h-4 w-4" strokeWidth={1.75} /><span className="hidden sm:inline">{t("search.new")}</span></button>}
           </div></div>
         {showRecent && (
           <div className="absolute inset-x-0 top-14 z-20 animate-rise rounded border border-paper-line bg-paper-card p-2 shadow-lift" role="dialog" aria-label={t("chat.recent")}>

@@ -8,7 +8,7 @@ import { Spinner, fmtBytes, fmtDuration } from "@/components/ui";
 import { useViewer } from "@/components/useViewer";
 import { abs, api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import type { Asset } from "@/lib/types";
+import { nameOf, type Asset } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
 
 interface Chunk { id: string; type: string; start_ms: number | null; content: string }
@@ -65,7 +65,7 @@ function MediaView() {
 
       <aside className="space-y-4">
         <div className="card space-y-4 p-4">
-          <h1 className="truncate text-lg font-medium" title={a.title}>{a.title}</h1>
+          <h1 className="truncate text-lg font-medium" title={a.title}>{nameOf(a)}</h1>
           <label className="block text-sm font-medium">{t("media.caption")}<textarea rows={3} className="input mt-1 font-normal" value={cap} onChange={(e) => setCap(e.target.value)} placeholder={t("media.captionPh")} /></label>
           <label className="block text-sm font-medium">{t("media.location")}<input className="input mt-1 font-normal" value={place} onChange={(e) => setPlace(e.target.value)} /></label>
           <label className="block text-sm font-medium">{t("media.taken")}<input type="date" className="input mt-1 font-normal" value={date} onChange={(e) => setDate(e.target.value)} /></label>

@@ -2,7 +2,7 @@
 import { Eye, FileText, Film, Image as ImageIcon } from "lucide-react";
 import { abs } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import type { Asset } from "@/lib/types";
+import { nameOf, type Asset } from "@/lib/types";
 import DownloadMenu from "./DownloadMenu";
 import { fmtDate } from "./ui";
 
@@ -21,7 +21,7 @@ export default function ChatFile({ asset: a, label, onView }: { asset: Asset; la
         {label && <span className="absolute left-1 top-1 rounded-sm bg-night/75 px-1 font-mono text-[10px] text-[#d8b65a]">{label}</span>}
       </button>
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 truncate text-[13px] font-medium"><Kind className="h-3.5 w-3.5 shrink-0 text-ink-mute" strokeWidth={1.5} /><span className="truncate">{a.caption_user || a.title}</span></p>
+        <p className="flex items-center gap-1.5 truncate text-[13px] font-medium"><Kind className="h-3.5 w-3.5 shrink-0 text-ink-mute" strokeWidth={1.5} /><span className="truncate" title={a.title}>{nameOf(a)}</span></p>
         {meta && <p className="mt-0.5 truncate text-[11px] uppercase tracking-[0.06em] text-ink-mute">{meta}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-1">

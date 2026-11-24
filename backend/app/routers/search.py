@@ -17,6 +17,7 @@ from ..search.answer import build_answer, summary_line
 from ..search.converse import converse, history_messages, shared_files
 from ..search.query_parser import ParsedQuery, parse_query
 from ..search.retrieval import SearchOutput, asset_card, tags_for
+from ..search import library_stats
 from ..search.retrieval import search as run_search
 from ..security import current_user, media_url
 from .common import owned_asset  # noqa: F401
@@ -140,7 +141,8 @@ def chat(body: ChatIn, user: User = Depends(current_user)):
             if can_chat:
                 try:
                     reply = converse(llm, message=body.message, history=history, out=out, who=who, total_files=total_files,
-                                     reveal_ids=smalltalk.asks_for_number(body.message), small_talk=bool(talk))
+                                     reveal_ids=smalltalk.asks_for_number(body.message), small_talk=bool(talk),
+                                     overview=library_stats.overview(db, uid))
                     for kind, val in _with_deadline(reply, FIRST_TOKEN_SECONDS):
                         if kind == "token":
                             text.append(val)

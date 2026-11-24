@@ -1,4 +1,5 @@
 import json
+import time
 import re
 from typing import Iterator
 
@@ -66,18 +67,27 @@ class OllamaLLM(LLM):
 
 
 class GroqLLM(LLM):
-    """Groq's hosted models (OpenAI-compatible API). Sends the prompt, including file excerpts, to Groq."""
+    """Groq's hosted models (OpenAI-compatible API). Sends the prompt, including file excerpts, to Groq.
+
+    Free Groq accounts have a per-model tokens-per-minute limit. Quick JSON jobs (rewriting the search query) go to a
+    small model so they don't use up the main model's budget, and a 429 "rate limited" answer is retried on the next
+    model in FALLBACKS (each model has its own limit) instead of dropping to the offline answer."""
     supports_json = True
     can_chat = True
     fast = True
     URL = "https://api.groq.com/openai/v1/chat/completions"
+    SMALL = "openai/gpt-oss-20b"
+    FALLBACKS = ["openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
 
     def __init__(self, model: str, api_key: str):
         self.model, self.key = model, api_key
         self.name = f"groq-{model}"
 
-    def _post(self, messages, *, stream: bool, json_mode: bool = False):
-        body = {"model": self.model, "messages": messages, "stream": stream, "temperature": 0.3}
+    def _models(self, first: str) -> list[str]:
+        return list(dict.fromkeys([first, *self.FALLBACKS]))
+
+    def _post(self, messages, *, model: str, stream: bool, json_mode: bool = False):
+        body = {"model": model, "messages": messages, "stream": stream, "temperature": 0.3}
         if json_mode:
             body["response_format"] = {"type": "json_object"}
         return body
@@ -85,27 +95,74 @@ class GroqLLM(LLM):
     def _headers(self):
         return {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
 
+    @staticmethod
+    def _wait(r) -> float:
+        try:
+            return float(r.headers.get("retry-after", "0"))
+        except ValueError:
+            return 0.0
+
     def complete(self, system, user, *, json_mode=False) -> str:
         msgs = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-        r = httpx.post(self.URL, headers=self._headers(), json=self._post(msgs, stream=False, json_mode=json_mode), timeout=60)
-        r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
+        last = None
+        for model in self._models(self.SMALL if json_mode else self.model):
+            r = httpx.post(self.URL, headers=self._headers(), json=self._post(msgs, model=model, stream=False, json_mode=json_mode), timeout=60)
+            if r.status_code == 429:
+                last = r
+                continue
+            r.raise_for_status()
+            return r.json()["choices"][0]["message"]["content"]
+        last.raise_for_status()
+        return ""
 
     def stream(self, system, user) -> Iterator[str]:
         return self.stream_chat([{"role": "system", "content": system}, {"role": "user", "content": user}])
 
     def stream_chat(self, messages: list[dict]) -> Iterator[str]:
-        with httpx.stream("POST", self.URL, headers=self._headers(), json=self._post(messages, stream=True), timeout=60) as r:
-            r.raise_for_status()
-            for line in r.iter_lines():
-                if not line.startswith("data:"):
+        models = self._models(self.model)
+        for i, model in enumerate(models):
+            with httpx.stream("POST", self.URL, headers=self._headers(), json=self._post(messages, model=model, stream=True), timeout=60) as r:
+                if r.status_code == 429 and i + 1 < len(models):
+                    wait = self._wait(r)
+                    if 0 < wait <= 3:  # about to free up: wait for the better model rather than switching
+                        r.close()
+                        time.sleep(wait)
+                        yield from self._stream_once(messages, model)
+                        return
                     continue
-                data = line[5:].strip()
-                if data == "[DONE]":
-                    break
-                delta = json.loads(data)["choices"][0].get("delta", {}).get("content")
-                if delta:
-                    yield delta
+                r.raise_for_status()
+                yield from self._read(r)
+                return
+
+    def _stream_once(self, messages, model):
+        with httpx.stream("POST", self.URL, headers=self._headers(), json=self._post(messages, model=model, stream=True), timeout=60) as r:
+            r.raise_for_status()
+            yield from self._read(r)
+
+    @staticmethod
+    def _read(r) -> Iterator[str]:
+        think = False
+        for line in r.iter_lines():
+            if not line.startswith("data:"):
+                continue
+            data = line[5:].strip()
+            if data == "[DONE]":
+                break
+            delta = json.loads(data)["choices"][0].get("delta", {}).get("content")
+            if not delta:
+                continue
+            # some fallback models think out loud in <think>...</think> before answering: don't show that
+            if "<think>" in delta:
+                before, delta = delta.split("<think>", 1)
+                if before:
+                    yield before
+                think = True
+            if think:
+                if "</think>" not in delta:
+                    continue
+                think, delta = False, delta.split("</think>", 1)[1]
+            if delta:
+                yield delta
 
 
 _json_re = re.compile(r"\{.*\}", re.S)
