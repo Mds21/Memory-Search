@@ -8,9 +8,20 @@ const en: Dict = {
   "nav.home": "Home", "nav.search": "Search", "nav.library": "Library", "nav.timeline": "Timeline", "nav.map": "Map",
   "nav.collections": "Collections", "nav.uploads": "Uploads", "nav.settings": "Settings", "nav.signOut": "Sign out",
   "auth.signIn": "Sign in", "auth.create": "Create account", "auth.email": "Email", "auth.password": "Password", "auth.name": "Your name",
-  "auth.haveAccount": "Already have an account?", "auth.noAccount": "New here?", "auth.tagline": "Find any photo, video or document by describing it.",
+  "auth.haveAccount": "Already have an account?", "auth.noAccount": "New here?", "auth.tagline": "Find any photo, video or document by describing it",
   "auth.passwordHint": "At least 8 characters",
-  "home.title": "What are you looking for?", "home.placeholder": "Try “beach photos from last December” or “what does my rental agreement say about the deposit?”",
+  "auth.google": "Continue with Google", "auth.or": "or",
+  "auth.googleOff": "Google sign-in isn't set up on this server yet. The owner can switch it on in Settings.",
+  "auth.googleOffline": "Couldn't load Google sign-in. Check your connection and try again.",
+  "gs.title": "Google sign-in", "gs.on": "On", "gs.off": "Off",
+  "gs.intro": "Let people sign in with their Google account. It needs a Client ID from Google Cloud, created once.",
+  "gs.troubleTitle": "Google button not showing", "gs.troubleBody": "Add these exact origins under Authorized JavaScript origins for this Client ID.",
+  "gs.troubleWait": "Changes in Google Cloud can take a few minutes to apply.", "gs.fromConfig": "Set by GOOGLE_CLIENT_ID in the server's .env file. Change it there.",
+  "gs.step1": "Open Google Cloud Console, then APIs & Services, then Credentials", "gs.step2": "Create credentials, OAuth client ID, Web application",
+  "gs.step3": "Under Authorized JavaScript origins, add", "gs.step4": "Create it, then paste the Client ID below", "gs.open": "Open Google Cloud credentials",
+  "gs.placeholder": "1234567890-abc.apps.googleusercontent.com", "gs.save": "Turn on", "gs.update": "Update", "gs.disable": "Turn off",
+  "gs.saved": "Google sign-in is on", "gs.removed": "Google sign-in is off",
+  "home.title": "What are you looking for?", "home.placeholder": "Describe a photo, video or document",
   "home.onThisDay": "On this day", "home.recent": "Recently added", "home.saved": "Saved searches", "home.try": "Try asking",
   "home.emptyTitle": "Your library is empty", "home.emptyBody": "Upload photos, videos or documents and search them by meaning.", "home.upload": "Upload files",
   "search.placeholder": "Ask about your photos, videos and documents", "search.send": "Send", "search.voice": "Voice search arrives in the next release",
@@ -43,8 +54,8 @@ const en: Dict = {
 
 const hi: Dict = {
   "nav.home": "होम", "nav.search": "खोज", "nav.library": "लाइब्रेरी", "nav.timeline": "समयरेखा", "nav.map": "नक्शा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्स", "nav.signOut": "साइन आउट",
-  "auth.signIn": "साइन इन", "auth.create": "खाता बनाएँ", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "आपका नाम", "auth.haveAccount": "पहले से खाता है?", "auth.noAccount": "नए हैं?", "auth.tagline": "बताकर कोई भी फ़ोटो, वीडियो या दस्तावेज़ खोजें।", "auth.passwordHint": "कम से कम 8 अक्षर",
-  "home.title": "आप क्या खोज रहे हैं?", "home.placeholder": "आज़माएँ: “पिछले दिसंबर के बीच फ़ोटो” या “किराया समझौते में जमा राशि के बारे में क्या लिखा है?”", "home.onThisDay": "आज के दिन", "home.recent": "हाल में जोड़े गए", "home.saved": "सहेजी गई खोजें", "home.try": "पूछकर देखें",
+  "auth.signIn": "साइन इन", "auth.create": "खाता बनाएँ", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "आपका नाम", "auth.haveAccount": "पहले से खाता है?", "auth.noAccount": "नए हैं?", "auth.tagline": "बताकर कोई भी फ़ोटो, वीडियो या दस्तावेज़ खोजें", "auth.passwordHint": "कम से कम 8 अक्षर",
+  "home.title": "आप क्या खोज रहे हैं?", "home.placeholder": "किसी फ़ोटो, वीडियो या दस्तावेज़ का वर्णन करें", "home.onThisDay": "आज के दिन", "home.recent": "हाल में जोड़े गए", "home.saved": "सहेजी गई खोजें", "home.try": "पूछकर देखें",
   "home.emptyTitle": "आपकी लाइब्रेरी खाली है", "home.emptyBody": "फ़ोटो, वीडियो या दस्तावेज़ अपलोड करें और अर्थ से खोजें।", "home.upload": "फ़ाइलें अपलोड करें",
   "search.placeholder": "अपने फ़ोटो, वीडियो और दस्तावेज़ों के बारे में पूछें", "search.send": "भेजें", "search.voice": "वॉइस खोज अगले संस्करण में आएगी", "search.results": "परिणाम", "search.none": "कुछ नहीं मिला। दूसरे शब्द आज़माएँ या कोई फ़िल्टर हटाएँ।", "search.addFilter": "फ़िल्टर जोड़ें",
   "search.photos": "फ़ोटो", "search.videos": "वीडियो", "search.documents": "दस्तावेज़", "search.from": "से", "search.to": "तक", "search.place": "स्थान", "search.apply": "लागू करें", "search.moreLikeThis": "इसी तरह के और", "search.save": "खोज सहेजें", "search.saved": "खोज सहेजी गई", "search.new": "नई चैट",
@@ -61,7 +72,7 @@ const hi: Dict = {
 
 const mr: Dict = {
   "nav.home": "मुख्यपृष्ठ", "nav.search": "शोध", "nav.library": "लायब्ररी", "nav.timeline": "कालरेषा", "nav.map": "नकाशा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्ज", "nav.signOut": "साइन आउट",
-  "auth.signIn": "साइन इन", "auth.create": "खाते तयार करा", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "तुमचे नाव", "auth.haveAccount": "आधीच खाते आहे?", "auth.noAccount": "नवीन आहात?", "auth.tagline": "वर्णन करून कोणताही फोटो, व्हिडिओ किंवा दस्तऐवज शोधा.",
+  "auth.signIn": "साइन इन", "auth.create": "खाते तयार करा", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "तुमचे नाव", "auth.haveAccount": "आधीच खाते आहे?", "auth.noAccount": "नवीन आहात?", "auth.tagline": "वर्णन करून कोणताही फोटो, व्हिडिओ किंवा दस्तऐवज शोधा",
   "home.title": "तुम्ही काय शोधत आहात?", "home.onThisDay": "या दिवशी", "home.recent": "अलीकडे जोडलेले", "home.saved": "जतन केलेले शोध", "home.try": "विचारून पहा", "home.emptyTitle": "तुमची लायब्ररी रिकामी आहे", "home.emptyBody": "फोटो, व्हिडिओ किंवा दस्तऐवज अपलोड करा आणि अर्थाने शोधा.", "home.upload": "फाइल्स अपलोड करा",
   "search.placeholder": "तुमच्या फोटो, व्हिडिओ आणि दस्तऐवजांबद्दल विचारा", "search.send": "पाठवा", "search.results": "निकाल", "search.none": "काहीही जुळले नाही. वेगळे शब्द वापरा किंवा फिल्टर काढा.", "search.addFilter": "फिल्टर जोडा",
   "search.photos": "फोटो", "search.videos": "व्हिडिओ", "search.documents": "दस्तऐवज", "search.moreLikeThis": "यासारखे आणखी", "search.new": "नवीन चॅट", "search.thinking": "शोधत आहे…", "search.sources": "स्रोत", "search.helpful": "उपयुक्त", "search.notHelpful": "उपयुक्त नाही",
@@ -73,7 +84,7 @@ const mr: Dict = {
 
 const ta: Dict = {
   "nav.home": "முகப்பு", "nav.search": "தேடல்", "nav.library": "நூலகம்", "nav.timeline": "காலவரிசை", "nav.map": "வரைபடம்", "nav.collections": "தொகுப்புகள்", "nav.uploads": "பதிவேற்றங்கள்", "nav.settings": "அமைப்புகள்", "nav.signOut": "வெளியேறு",
-  "auth.signIn": "உள்நுழை", "auth.create": "கணக்கை உருவாக்கு", "auth.email": "மின்னஞ்சல்", "auth.password": "கடவுச்சொல்", "auth.name": "உங்கள் பெயர்", "auth.haveAccount": "ஏற்கனவே கணக்கு உள்ளதா?", "auth.noAccount": "புதியவரா?", "auth.tagline": "விவரித்துச் சொல்லி எந்தப் புகைப்படம், காணொளி, ஆவணத்தையும் கண்டறியுங்கள்.",
+  "auth.signIn": "உள்நுழை", "auth.create": "கணக்கை உருவாக்கு", "auth.email": "மின்னஞ்சல்", "auth.password": "கடவுச்சொல்", "auth.name": "உங்கள் பெயர்", "auth.haveAccount": "ஏற்கனவே கணக்கு உள்ளதா?", "auth.noAccount": "புதியவரா?", "auth.tagline": "விவரித்துச் சொல்லி எந்தப் புகைப்படம், காணொளி, ஆவணத்தையும் கண்டறியுங்கள்",
   "home.title": "எதைத் தேடுகிறீர்கள்?", "home.onThisDay": "இந்த நாளில்", "home.recent": "சமீபத்தில் சேர்த்தவை", "home.saved": "சேமித்த தேடல்கள்", "home.try": "கேட்டுப் பாருங்கள்", "home.emptyTitle": "உங்கள் நூலகம் காலியாக உள்ளது", "home.emptyBody": "புகைப்படங்கள், காணொளிகள், ஆவணங்களைப் பதிவேற்றி பொருளின் அடிப்படையில் தேடுங்கள்.", "home.upload": "கோப்புகளைப் பதிவேற்று",
   "search.placeholder": "உங்கள் புகைப்படங்கள், காணொளிகள், ஆவணங்கள் பற்றிக் கேளுங்கள்", "search.send": "அனுப்பு", "search.results": "முடிவுகள்", "search.none": "பொருந்தும் எதுவும் இல்லை. வேறு சொற்களை முயலவும்.", "search.addFilter": "வடிகட்டியைச் சேர்",
   "search.photos": "புகைப்படங்கள்", "search.videos": "காணொளிகள்", "search.documents": "ஆவணங்கள்", "search.moreLikeThis": "இதுபோன்றவை", "search.new": "புதிய அரட்டை", "search.thinking": "தேடுகிறது…", "search.sources": "மூலங்கள்", "search.helpful": "பயனுள்ளது", "search.notHelpful": "பயனில்லை",
@@ -85,8 +96,8 @@ const ta: Dict = {
 
 const es: Dict = {
   "nav.home": "Inicio", "nav.search": "Buscar", "nav.library": "Biblioteca", "nav.timeline": "Cronología", "nav.map": "Mapa", "nav.collections": "Colecciones", "nav.uploads": "Subidas", "nav.settings": "Ajustes", "nav.signOut": "Cerrar sesión",
-  "auth.signIn": "Iniciar sesión", "auth.create": "Crear cuenta", "auth.email": "Correo electrónico", "auth.password": "Contraseña", "auth.name": "Tu nombre", "auth.haveAccount": "¿Ya tienes cuenta?", "auth.noAccount": "¿Eres nuevo?", "auth.tagline": "Encuentra cualquier foto, vídeo o documento describiéndolo.", "auth.passwordHint": "Al menos 8 caracteres",
-  "home.title": "¿Qué estás buscando?", "home.placeholder": "Prueba “fotos de la playa en diciembre” o “¿qué dice mi contrato sobre el depósito?”", "home.onThisDay": "Un día como hoy", "home.recent": "Añadido recientemente", "home.saved": "Búsquedas guardadas", "home.try": "Prueba a preguntar",
+  "auth.signIn": "Iniciar sesión", "auth.create": "Crear cuenta", "auth.email": "Correo electrónico", "auth.password": "Contraseña", "auth.name": "Tu nombre", "auth.haveAccount": "¿Ya tienes cuenta?", "auth.noAccount": "¿Eres nuevo?", "auth.tagline": "Encuentra cualquier foto, vídeo o documento describiéndolo", "auth.passwordHint": "Al menos 8 caracteres",
+  "home.title": "¿Qué estás buscando?", "home.placeholder": "Describe una foto, un vídeo o un documento", "home.onThisDay": "Un día como hoy", "home.recent": "Añadido recientemente", "home.saved": "Búsquedas guardadas", "home.try": "Prueba a preguntar",
   "home.emptyTitle": "Tu biblioteca está vacía", "home.emptyBody": "Sube fotos, vídeos o documentos y búscalos por significado.", "home.upload": "Subir archivos",
   "search.placeholder": "Pregunta sobre tus fotos, vídeos y documentos", "search.send": "Enviar", "search.voice": "La búsqueda por voz llega en la próxima versión", "search.results": "Resultados", "search.none": "No hay coincidencias. Prueba otras palabras o quita un filtro.", "search.addFilter": "Añadir filtro",
   "search.photos": "Fotos", "search.videos": "Vídeos", "search.documents": "Documentos", "search.from": "Desde", "search.to": "Hasta", "search.place": "Lugar", "search.apply": "Aplicar", "search.moreLikeThis": "Más como esto", "search.save": "Guardar búsqueda", "search.saved": "Búsqueda guardada", "search.new": "Nuevo chat",

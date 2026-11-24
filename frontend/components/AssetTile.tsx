@@ -24,16 +24,16 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
         {a.kind === "video" && (<>
           <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink/60 text-white backdrop-blur"><Play className="h-4 w-4 translate-x-px" fill="currentColor" /></span></span>
           <span className="absolute bottom-2 right-2 rounded bg-ink/70 px-1.5 py-0.5 text-[11px] font-medium text-white">{fmtDuration(a.duration_ms)}</span></>)}
-        {pending && <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-paper-card/90 px-2 py-0.5 text-[11px] font-medium text-ink-soft"><Spinner className="h-3 w-3" />{t(`up.${a.status}`)}</span>}
+        {pending && <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-[3px] bg-paper-card/90 px-2 py-0.5 text-[11px] font-medium text-ink-soft"><Spinner className="h-3 w-3" />{t(`up.${a.status}`)}</span>}
         {a.status === "failed" && <span className="absolute left-2 top-2 rounded-[3px] bg-danger px-2 py-0.5 text-[11px] font-medium text-white">{t("up.failed")}</span>}
         {selectMode && <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 ${selected ? "border-tide bg-tide text-white" : "border-white bg-ink/30"}`}>{selected && <Check className="h-3.5 w-3.5" />}</span>}
-        {a.match?.page && <span className="absolute right-2 top-2 rounded-[3px] bg-paper-card/95 px-2 py-0.5 text-[11px] font-semibold text-tide shadow">{t("search.page")} {a.match.page}</span>}
+        {a.match?.page && <span className="absolute right-2 top-2 rounded-[3px] bg-paper-card/95 px-2 py-0.5 text-[11px] font-medium tabular-nums text-tide shadow">{t("search.page")} {a.match.page}</span>}
       </div>
       {a.kind !== "document" && (
         <p className="mt-1.5 truncate text-xs text-ink-mute">{[a.place, a.taken_at ? new Date(a.taken_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : null].filter(Boolean).join(", ") || <span className="text-ink-faint">{label}</span>}</p>)}
       {(a.kind === "document" || (a.snippet && terms.length > 0 && a.match?.type === "transcript")) && (
         <div className="border-t border-ink/20 pt-2">
-          <p className="truncate font-serif text-[15px] font-semibold">{a.title}</p>
+          <p className="truncate font-serif text-[15px] font-medium">{a.title}</p>
           {a.snippet && <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-ink-mute">{highlight(a.snippet, terms)}</p>}
         </div>)}
       {a.status === "failed" && a.status_detail && <p className="pt-1 text-xs text-danger">{a.status_detail}</p>}

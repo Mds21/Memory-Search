@@ -33,7 +33,7 @@ export default function Uploads() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{i.assetId && i.status === "ready" ? <Link className="hover:underline" href={`/media/${i.assetId}`}>{i.name}</Link> : i.name}</p>
               <p className="text-xs text-ink-mute">{t(`up.${i.status}`)}{i.detail ? ` • ${i.detail}` : ""}</p>
-              {i.status === "uploading" && <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-paper-sunk"><div className="h-full bg-tide transition-all" style={{ width: `${i.progress}%` }} /></div>}
+              {i.status === "uploading" && <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-paper-sunk"><div className="h-full origin-left bg-tide transition-transform duration-300" style={{ transform: `scaleX(${i.progress / 100})` }} /></div>}
             </div>
             {i.status === "failed" && i.assetId && <button className="btn-outline" onClick={() => retry(i.assetId!)}><RotateCw className="h-4 w-4" />{t("up.retry")}</button>}
           </li>))}

@@ -55,6 +55,7 @@ export const api = {
   get: <T,>(p: string) => json<T>(p),
   post: <T,>(p: string, body?: unknown) => json<T>(p, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) }),
   patch: <T,>(p: string, body: unknown) => json<T>(p, { method: "PATCH", body: JSON.stringify(body) }),
+  put: <T,>(p: string, body: unknown) => json<T>(p, { method: "PUT", body: JSON.stringify(body) }),
   del: <T = void,>(p: string) => json<T>(p, { method: "DELETE" }),
   upload(path: string, files: File[], onProgress?: (pct: number) => void): Promise<{ items: any[] }> {
     return new Promise((resolve, reject) => {

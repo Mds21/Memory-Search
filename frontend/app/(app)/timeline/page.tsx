@@ -43,7 +43,7 @@ export default function Timeline() {
           </div>
           <div className="mt-1 flex min-w-max gap-1.5">{buckets.map((b, i) => <span key={b.period} className="w-9 text-center text-[10px] font-medium text-ink-soft">{i === 0 || b.period.endsWith("-01") ? b.period.slice(0, 4) : ""}</span>)}</div>
         </div>
-        {sel && <h2 className="mb-3 mt-6 text-lg font-semibold">{monthLabel(sel, lang)} <span className="text-sm font-normal text-ink-mute">{items ? `${items.length} ${t("tl.items")}` : ""}</span></h2>}
+        {sel && <h2 className="mb-3 mt-6 text-lg font-medium">{monthLabel(sel, lang)} <span className="text-sm font-normal text-ink-mute">{items ? `${items.length} ${t("tl.items")}` : ""}</span></h2>}
         {items === null ? <GridSkeleton n={8} /> : <div className="masonry">{items.map((a) => <AssetTile key={a.asset_id} asset={a} onOpen={viewer.open} />)}</div>}
       </>)}
       {viewer.node}

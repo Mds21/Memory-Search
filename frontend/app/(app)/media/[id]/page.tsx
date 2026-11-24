@@ -54,17 +54,17 @@ function MediaView() {
             : <img src={abs(a.original_url || a.preview_url)} alt={a.caption_user || a.title} className="mx-auto max-h-[70vh] object-contain" />}
         </div>
         {a.kind === "video" && moments.length > 0 && (
-          <section><h2 className="mb-2 text-sm font-semibold text-ink-soft">{t("media.moments")}</h2>
+          <section><h2 className="mb-2 text-sm font-medium text-ink-soft">{t("media.moments")}</h2>
             <ul className="divide-y divide-paper-line rounded-xl border border-paper-line bg-paper-card">{moments.map((m) => (
               <li key={m.id}><button onClick={() => seek(m.start_ms!)} className="flex w-full gap-3 px-3 py-2 text-left text-sm hover:bg-paper-sunk">
                 <span className="w-12 shrink-0 font-mono text-xs text-tide">{fmtDuration(m.start_ms)}</span><span className="line-clamp-2">{m.type === "transcript" ? `“${m.content}”` : m.content}</span></button></li>))}</ul></section>)}
-        {similar.length > 0 && <section><h2 className="mb-2 text-sm font-semibold text-ink-soft">{t("media.similar")}</h2>
+        {similar.length > 0 && <section><h2 className="mb-2 text-sm font-medium text-ink-soft">{t("media.similar")}</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{similar.slice(0, 8).map((s) => <AssetTile key={s.asset_id} asset={s} onOpen={(x) => (x.kind === "document" ? router.push(`/documents/${x.asset_id}`) : router.push(`/media/${x.asset_id}`))} />)}</div></section>}
       </div>
 
       <aside className="space-y-4">
         <div className="card space-y-4 p-4">
-          <h1 className="truncate text-base font-semibold" title={a.title}>{a.title}</h1>
+          <h1 className="truncate text-lg font-medium" title={a.title}>{a.title}</h1>
           <label className="block text-sm font-medium">{t("media.caption")}<textarea rows={3} className="input mt-1 font-normal" value={cap} onChange={(e) => setCap(e.target.value)} placeholder={t("media.captionPh")} /></label>
           <label className="block text-sm font-medium">{t("media.location")}<input className="input mt-1 font-normal" value={place} onChange={(e) => setPlace(e.target.value)} /></label>
           <label className="block text-sm font-medium">{t("media.taken")}<input type="date" className="input mt-1 font-normal" value={date} onChange={(e) => setDate(e.target.value)} /></label>
@@ -74,7 +74,7 @@ function MediaView() {
           <button className="btn-primary w-full" onClick={save} disabled={saving}>{saving && <Spinner />}{t("media.save")}</button>
         </div>
         <div className="card space-y-1 p-4 text-sm text-ink-soft">
-          <h2 className="mb-1 font-semibold text-ink">{t("media.details")}</h2>
+          <h2 className="mb-1 font-medium text-ink">{t("media.details")}</h2>
           {a.width && <p>{a.width} × {a.height}</p>}{a.duration_ms ? <p>{fmtDuration(a.duration_ms)}</p> : null}{a.size_bytes ? <p>{fmtBytes(a.size_bytes)}</p> : null}
           {a.status === "failed" && <p className="text-danger">{a.status_detail}</p>}
         </div>

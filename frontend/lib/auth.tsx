@@ -4,7 +4,7 @@ import { API, api, tokens } from "./api";
 import type { User } from "./types";
 import { useI18n } from "./i18n";
 
-interface AuthCtx { user: User | null; loading: boolean; login: (e: string, p: string) => Promise<void>; register: (e: string, p: string, name: string, lang: string) => Promise<void>; logout: () => void; setUser: (u: User) => void }
+interface AuthCtx { user: User | null; loading: boolean; login: (e: string, p: string) => Promise<void>; register: (e: string, p: string, name: string, lang: string) => Promise<void>; google: (credential: string, lang: string) => Promise<void>; logout: () => void; setUser: (u: User) => void }
 const Ctx = createContext<AuthCtx>(null as unknown as AuthCtx);
 
 async function authCall(path: string, body: object) {
@@ -32,7 +32,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const finish = useCallback((d: any) => { tokens.set({ access_token: d.access_token, refresh_token: d.refresh_token }); setUser(d.user); if (d.user?.language) setLang(d.user.language); }, [setLang]);
   const login = useCallback(async (email: string, password: string) => finish(await authCall("/auth/login", { email, password })), [finish]);
   const register = useCallback(async (email: string, password: string, display_name: string, language: string) => finish(await authCall("/auth/register", { email, password, display_name, language })), [finish]);
+  const google = useCallback(async (credential: string, language: string) => finish(await authCall("/auth/google", { credential, language })), [finish]);
   const logout = useCallback(() => { tokens.set(null); setUser(null); location.href = "/login"; }, []);
-  return <Ctx.Provider value={{ user, loading, login, register, logout, setUser }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, loading, login, register, google, logout, setUser }}>{children}</Ctx.Provider>;
 }
 export const useAuth = () => useContext(Ctx);

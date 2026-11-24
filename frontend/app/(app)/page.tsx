@@ -46,10 +46,10 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <header className="max-w-3xl">
-        <h1 className="font-serif text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">{user?.display_name ? `${user.display_name}, ` : ""}{t("home.title").replace(/^./, (c) => (user?.display_name ? c.toLowerCase() : c))}</h1>
+        <h1 className="font-serif text-4xl font-medium leading-[1.1] tracking-[-0.02em] sm:text-5xl">{t("home.title")}</h1>
         <div className="mt-7"><SearchBar large value={q} onChange={setQ} onSubmit={go} placeholder={t("home.placeholder")} autoFocus /></div>
         <ul className="mt-5 divide-y divide-paper-line border-y border-paper-line text-[15px]" aria-label={t("home.try")}>
-          {(EXAMPLES[lang] || EXAMPLES.en).map((e) => <li key={e}><button className="flex w-full items-baseline justify-between gap-4 py-2 text-left text-ink-soft hover:text-tide" onClick={() => go(e)}><span className="font-serif italic">“{e}”</span><span className="shrink-0 text-xs text-ink-faint">{t("search.send")}</span></button></li>)}
+          {(EXAMPLES[lang] || EXAMPLES.en).map((e) => <li key={e}><button className="flex w-full items-baseline justify-between gap-4 py-2 text-left text-ink-soft hover:text-tide" onClick={() => go(e)}><span className="font-serif">“{e}”</span><span className="shrink-0 font-mono text-xs text-ink-faint">↵</span></button></li>)}
         </ul>
       </header>
 
@@ -58,13 +58,13 @@ export default function Home() {
           action={<Link href="/uploads" className="btn-primary">{t("home.upload")}</Link>} /></div>
       ) : (<>
         {saved.length > 0 && (
-          <section className="mt-12"><h2 className="mb-3 flex items-center gap-2 border-b border-paper-line pb-2 font-serif text-lg font-semibold"><Bookmark className="h-4 w-4 text-ink-faint" />{t("home.saved")}</h2>
+          <section className="mt-12"><h2 className="mb-3 flex items-center gap-2 border-b border-paper-line pb-2 font-serif text-lg font-medium"><Bookmark className="h-4 w-4 text-ink-faint" />{t("home.saved")}</h2>
             <div className="flex flex-wrap gap-2">{saved.map((s) => <button key={s.id} className="chip hover:bg-tide-soft" onClick={() => go(s.query.query || s.name || "")}>{s.name || s.query.query}</button>)}</div></section>)}
         {otd.length > 0 && (
-          <section className="mt-10"><h2 className="mb-3 flex items-center gap-2 border-b border-paper-line pb-2 font-serif text-lg font-semibold"><CalendarClock className="h-4 w-4 text-ink-faint" />{t("home.onThisDay")}</h2>
+          <section className="mt-10"><h2 className="mb-3 flex items-center gap-2 border-b border-paper-line pb-2 font-serif text-lg font-medium"><CalendarClock className="h-4 w-4 text-ink-faint" />{t("home.onThisDay")}</h2>
             <div className="flex gap-3 overflow-x-auto pb-2">{otd.map((a) => (
               <div key={a.asset_id} className="w-44 shrink-0"><AssetTile asset={a} onOpen={viewer.open} /><p className="mt-1 text-xs text-ink-mute">{a.years_ago} {a.years_ago === 1 ? "year" : "years"} ago</p></div>))}</div></section>)}
-        <section className="mt-10"><h2 className="mb-3 border-b border-paper-line pb-2 font-serif text-lg font-semibold">{t("home.recent")}</h2>
+        <section className="mt-10"><h2 className="mb-3 border-b border-paper-line pb-2 font-serif text-lg font-medium">{t("home.recent")}</h2>
           {!recent ? <GridSkeleton n={8} /> : <div className="masonry">{recent.map((a) => <AssetTile key={a.asset_id} asset={a} onOpen={viewer.open} />)}</div>}</section>
       </>)}
       {viewer.node}

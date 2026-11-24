@@ -70,3 +70,12 @@ class FeedbackIn(BaseModel):
 class ReindexIn(BaseModel):
     asset_ids: list[str] | None = None
     only_failed: bool = False
+
+
+class GoogleIn(BaseModel):
+    credential: str = Field(min_length=20, max_length=8000)  # the ID token Google Identity Services hands the browser
+    language: str = "en"
+
+
+class GoogleSettingIn(BaseModel):
+    client_id: str = Field(default="", max_length=200)

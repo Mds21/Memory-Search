@@ -1,5 +1,6 @@
 import io
 import json
+import secrets
 import zipfile
 from datetime import datetime, timezone
 
@@ -8,11 +9,12 @@ from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from .. import app_settings, google_auth
 from ..adapters import registry
 from ..db import get_db
 from ..models import Asset, AssetTag, Collection, Conversation, Tag, User
-from ..schemas import LoginIn, ProfilePatch, RefreshIn, RegisterIn
-from ..security import current_user, decode, hash_password, make_tokens, verify_password
+from ..schemas import GoogleIn, GoogleSettingIn, LoginIn, ProfilePatch, RefreshIn, RegisterIn
+from ..security import admin_user, current_user, decode, hash_password, make_tokens, verify_password
 
 router = APIRouter(tags=["auth"])
 
@@ -40,6 +42,50 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
     if not u or not verify_password(body.password, u.hashed_password):
         raise HTTPException(401, "Incorrect email or password")
     return {**make_tokens(u.id), "user": user_out(u)}
+
+
+@router.get("/auth/providers")
+def providers():
+    """What the sign-in page can offer. The Google client id is public by design (it ships in every Google button)."""
+    cid = app_settings.google_client_id() or None
+    return {"password": True, "google_client_id": cid, "google_ready": bool(cid), "password_reset": False}
+
+
+@router.post("/auth/google")
+def google_sign_in(body: GoogleIn, db: Session = Depends(get_db)):
+    """Signs in with a Google ID token. Links to an existing account with the same verified email, or creates one."""
+    client_id = app_settings.google_client_id()
+    if not client_id:
+        raise HTTPException(400, "Google sign-in is not set up on this server")
+    claims = google_auth.verify(body.credential, client_id)
+    sub, email = claims["sub"], claims["email"].strip().lower()
+    u = db.query(User).filter(User.google_sub == sub).first() or db.query(User).filter(func.lower(User.email) == email).first()
+    if u is None:
+        first = db.query(User).count() == 0
+        u = User(email=email, hashed_password=hash_password(secrets.token_urlsafe(32)),  # unusable until they set one
+                 display_name=(claims.get("name") or email.split("@")[0])[:120],
+                 language=body.language if body.language in {"en", "hi", "mr", "ta", "es"} else "en", is_admin=first)
+        db.add(u)
+    if not u.google_sub:
+        u.google_sub = sub
+    db.commit()
+    return {**make_tokens(u.id), "user": user_out(u)}
+
+
+@router.get("/admin/settings/google")
+def get_google_setting(_: User = Depends(admin_user)):
+    return {"client_id": app_settings.google_client_id() or None, "source": app_settings.google_source()}
+
+
+@router.put("/admin/settings/google")
+def put_google_setting(body: GoogleSettingIn, _: User = Depends(admin_user)):
+    if app_settings.google_source() == "env":
+        raise HTTPException(409, "GOOGLE_CLIENT_ID is set in the server environment. Change it there.")
+    cid = body.client_id.strip()
+    if cid and not app_settings.GOOGLE_ID_RE.match(cid):
+        raise HTTPException(422, "That does not look like a Google Client ID. It ends in .apps.googleusercontent.com")
+    app_settings.save(google_client_id=cid or None)
+    return {"client_id": app_settings.google_client_id() or None, "source": app_settings.google_source()}
 
 
 @router.post("/auth/refresh")

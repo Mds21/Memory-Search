@@ -5,12 +5,12 @@
 :root { color-scheme: light; }
 html, body { height: 100%; }
 body { @apply bg-paper font-sans text-ink antialiased; }
-h1, h2, h3 { font-family: theme("fontFamily.serif"); }
+h1, h2, h3 { font-family: theme("fontFamily.serif"); font-weight: 500; }
 :focus-visible { outline: 2px solid theme("colors.tide.DEFAULT"); outline-offset: 2px; border-radius: 2px; }
 ::selection { background: theme("colors.glow.DEFAULT"); color: theme("colors.ink.DEFAULT"); }
 
 @layer components {
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded px-4 py-2 text-sm font-medium transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50; }
   .btn-primary { @apply btn bg-ink text-paper hover:bg-tide; }
   .btn-ghost { @apply btn text-ink-soft hover:bg-paper-sunk; }
   .btn-outline { @apply btn border border-ink/25 bg-transparent text-ink hover:border-ink hover:bg-paper-card; }
@@ -19,7 +19,7 @@ h1, h2, h3 { font-family: theme("fontFamily.serif"); }
   .card { @apply rounded border border-paper-line bg-paper-card; }
   .chip { @apply inline-flex items-center gap-1.5 rounded-[3px] border border-paper-line bg-paper-card px-2 py-0.5 text-xs font-medium text-ink-soft; }
   .chip-on { @apply border-tide bg-tide-soft text-tide-dark; }
-  .h-page { @apply font-serif text-3xl font-semibold tracking-tight; }
+  .h-page { @apply font-serif text-3xl font-medium; }
 }
 
 .masonry { column-gap: 12px; columns: 2; }

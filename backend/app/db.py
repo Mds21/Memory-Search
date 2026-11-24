@@ -40,3 +40,14 @@ def get_db():
 def init_db():
     from . import models  # noqa: F401
     Base.metadata.create_all(engine)
+    _add_missing_columns()
+
+
+def _add_missing_columns():
+    """create_all() never alters existing tables, so columns added later are added here (nullable, no data change)."""
+    from sqlalchemy import inspect, text
+    have = {c["name"] for c in inspect(engine).get_columns("users")}
+    with engine.begin() as conn:
+        if "google_sub" not in have:
+            conn.execute(text("ALTER TABLE users ADD COLUMN google_sub VARCHAR(64)"))
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_google_sub ON users (google_sub)"))

@@ -30,6 +30,7 @@ class User(Base, Timestamped):
     language: Mapped[str] = mapped_column(String(8), default="en")
     timezone: Mapped[str] = mapped_column(String(64), default="Asia/Kolkata")
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    google_sub: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)  # Google account id
 
 
 class Asset(Base, Timestamped):
