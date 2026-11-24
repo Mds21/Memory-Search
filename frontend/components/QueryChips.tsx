@@ -30,7 +30,7 @@ export default function QueryChips({ parsed, onChange }: { parsed: Parsed; onCha
       {f.tags.map((tg) => <Chip key={tg} icon={Tag} label={tg} onRemove={() => set({ tags: f.tags.filter((x) => x !== tg) })} />)}
       <button className="chip hover:bg-paper-sunk" onClick={() => setOpen((o) => !o)} aria-expanded={open}><Plus className="h-3.5 w-3.5" />{t("search.addFilter")}</button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-2 w-72 space-y-3 rounded-xl border border-paper-line bg-white p-3 shadow-lift">
+        <div className="absolute left-0 top-full z-20 mt-2 w-72 space-y-3 rounded-xl border border-paper-line bg-paper-card p-3 shadow-lift">
           <div className="flex gap-1.5">{(["photo", "video", "document"] as Kind[]).map((k) => { const I = KIND_ICON[k]; return (
             <button key={k} onClick={() => toggle(k)} className={`chip ${f.kinds.includes(k) ? "chip-on" : ""}`}><I className="h-3.5 w-3.5" />{t(KIND_KEY[k])}</button>); })}</div>
           <div className="grid grid-cols-2 gap-2">

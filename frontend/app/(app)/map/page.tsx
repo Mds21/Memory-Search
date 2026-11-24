@@ -40,7 +40,7 @@ export default function MapPage() {
           d.className = "relative h-12 w-12 rounded-full border-2 border-white bg-tide bg-cover bg-center shadow-lift";
           d.setAttribute("aria-label", `${c.place || ""} ${c.count}`);
           if (c.asset.thumb_url) d.style.backgroundImage = `url(${abs(c.asset.thumb_url)})`;
-          if (c.count > 1) { const n = document.createElement("span"); n.textContent = String(c.count); n.className = "absolute -right-1 -top-1 rounded-full bg-ink px-1.5 text-[11px] font-semibold text-white"; d.appendChild(n); }
+          if (c.count > 1) { const n = document.createElement("span"); n.textContent = String(c.count); n.className = "absolute -right-1 -top-1 rounded-[3px] bg-ink px-1.5 text-[11px] font-semibold text-white"; d.appendChild(n); }
           d.onclick = async () => {
             if (c.count > 1 && map.getZoom() < 14) return map.easeTo({ center: [c.lon, c.lat], zoom: map.getZoom() + 2.5 });
             const cards = await Promise.all(c.asset_ids.slice(0, 40).map((id) => api.get<Asset>(`/assets/${id}`)));
@@ -59,7 +59,7 @@ export default function MapPage() {
     <div className="flex h-[calc(100vh-4rem)] flex-col lg:h-screen">
       <div className="flex items-center gap-3 px-4 py-3 sm:px-6"><h1 className="h-page">{t("map.title")}</h1>{total === null && <Spinner />}{total ? <span className="text-sm text-ink-mute">{total} {t("common.photos")}</span> : null}</div>
       <div className="relative min-h-0 flex-1"><div ref={el} className="absolute inset-0" />
-        {total === 0 && <div className="pointer-events-none absolute inset-x-4 top-4 mx-auto max-w-md rounded-xl bg-white/95 p-4 shadow-lift"><Empty title={t("map.empty")} /></div>}</div>
+        {total === 0 && <div className="pointer-events-none absolute inset-x-4 top-4 mx-auto max-w-md rounded-xl bg-paper-card/95 p-4 shadow-lift"><Empty title={t("map.empty")} /></div>}</div>
       {viewer.node}
     </div>
   );

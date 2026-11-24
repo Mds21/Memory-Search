@@ -8,7 +8,7 @@ from ..adapters.embeddings import tokenize
 from .query_parser import STOP, ParsedQuery
 
 T = {
-    "en": {"found": "Found {n} matches ({b}). Best matches are shown first.", "none": "I couldn't find anything matching that. Try different words or remove a filter.",
+    "en": {"found": "Found {n} results ({b}). Best matches are shown first.", "none": "I couldn't find anything matching that. Try different words or remove a filter.",
            "nodoc": "I couldn't find this in your documents.", "based": "From your documents:", "photo": "photos", "video": "videos", "document": "documents"},
     "hi": {"found": "{n} परिणाम मिले ({b})। सबसे उपयुक्त पहले दिखाए गए हैं।", "none": "इससे मेल खाता कुछ नहीं मिला। दूसरे शब्द आज़माएँ या कोई फ़िल्टर हटाएँ।",
            "nodoc": "यह जानकारी मुझे आपके दस्तावेज़ों में नहीं मिली।", "based": "आपके दस्तावेज़ों से:", "photo": "फोटो", "video": "वीडियो", "document": "दस्तावेज़"},
@@ -41,7 +41,10 @@ def summary_line(out, lang: str) -> str:
     for card in out.cards:
         c[card["kind"]] += 1
     b = ", ".join(f"{n} {t[k]}" for k, n in c.items() if n)
-    return t["found"].format(n=out.total, b=b)
+    msg = t["found"].format(n=out.total, b=b)
+    if _tr(lang) is _tr("en") and out.total == 1:
+        msg = msg.replace("Found 1 results", "Found 1 result").replace("Best matches are shown first.", "Here it is.")
+    return msg
 
 
 def build_answer(pq: ParsedQuery, out, lang: str, llm, *, max_sources: int = 6) -> tuple[Iterator[str], list[dict]]:

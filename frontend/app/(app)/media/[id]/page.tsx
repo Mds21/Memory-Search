@@ -55,9 +55,9 @@ function MediaView() {
         </div>
         {a.kind === "video" && moments.length > 0 && (
           <section><h2 className="mb-2 text-sm font-semibold text-ink-soft">{t("media.moments")}</h2>
-            <ul className="divide-y divide-paper-line rounded-xl border border-paper-line bg-white">{moments.map((m) => (
+            <ul className="divide-y divide-paper-line rounded-xl border border-paper-line bg-paper-card">{moments.map((m) => (
               <li key={m.id}><button onClick={() => seek(m.start_ms!)} className="flex w-full gap-3 px-3 py-2 text-left text-sm hover:bg-paper-sunk">
-                <span className="w-12 shrink-0 font-mono text-xs text-tide-dark">{fmtDuration(m.start_ms)}</span><span className="line-clamp-2">{m.type === "transcript" ? `“${m.content}”` : m.content}</span></button></li>))}</ul></section>)}
+                <span className="w-12 shrink-0 font-mono text-xs text-tide">{fmtDuration(m.start_ms)}</span><span className="line-clamp-2">{m.type === "transcript" ? `“${m.content}”` : m.content}</span></button></li>))}</ul></section>)}
         {similar.length > 0 && <section><h2 className="mb-2 text-sm font-semibold text-ink-soft">{t("media.similar")}</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{similar.slice(0, 8).map((s) => <AssetTile key={s.asset_id} asset={s} onOpen={(x) => (x.kind === "document" ? router.push(`/documents/${x.asset_id}`) : router.push(`/media/${x.asset_id}`))} />)}</div></section>}
       </div>

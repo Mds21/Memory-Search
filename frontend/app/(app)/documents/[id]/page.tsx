@@ -44,11 +44,11 @@ function DocView() {
             : a.thumb_url ? <img src={abs(a.preview_url || a.thumb_url)} alt={a.title} className="w-full" /> : null}
         </div>
         <div className="max-h-[75vh] space-y-4 overflow-y-auto">
-          {summary && <div className="card border-tide-ring bg-tide-soft p-4"><h2 className="mb-1 text-sm font-semibold text-tide-dark">{t("doc.summary")}</h2><p className="text-sm leading-relaxed">{summary.content}</p></div>}
+          {summary && <div className="card border-tide-ring bg-tide-soft p-4"><h2 className="mb-1 text-sm font-semibold text-tide">{t("doc.summary")}</h2><p className="text-sm leading-relaxed">{summary.content}</p></div>}
           {pages.size === 0 && <p className="text-sm text-ink-mute">{t("doc.noText")}</p>}
           {[...pages.entries()].map(([p, texts]) => (
             <article key={p} ref={(n) => { refs.current[p] = n; }} className={`card p-4 ${p === page ? "border-tide ring-1 ring-tide" : ""}`}>
-              <button className="mb-2 text-xs font-semibold text-tide-dark hover:underline" onClick={() => setPage(p)}>{t("doc.page")} {p}</button>
+              <button className="mb-2 text-xs font-semibold text-tide hover:underline" onClick={() => setPage(p)}>{t("doc.page")} {p}</button>
               <p className="whitespace-pre-wrap text-sm leading-relaxed">{highlight(texts.join("\n\n"), terms)}</p>
             </article>))}
         </div>

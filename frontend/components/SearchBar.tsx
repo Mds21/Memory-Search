@@ -31,9 +31,9 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder, auto
   return (
     <div className="relative">
       <form onSubmit={(e) => { e.preventDefault(); submit(hi >= 0 ? sugs[hi].text : value); }}
-        className={`flex items-center gap-2 rounded-2xl border border-paper-line bg-white shadow-lift focus-within:border-tide focus-within:ring-2 focus-within:ring-tide-ring/40 ${large ? "px-4 py-3" : "px-3 py-2"}`}>
+        className={`flex items-center gap-2 border-2 border-ink bg-paper-card focus-within:border-tide ${large ? "px-4 py-3.5" : "px-3 py-2"}`}>
         <SearchIcon className="h-5 w-5 shrink-0 text-ink-faint" aria-hidden />
-        <input ref={ref} value={value} onChange={(e) => { onChange(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 120)}
+        <input ref={ref} value={value} onChange={(e) => { onChange(e.target.value); setOpen(true); }} onFocus={() => value && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 120)}
           onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); setHi((h) => Math.min(h + 1, sugs.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setHi((h) => Math.max(h - 1, -1)); } else if (e.key === "Escape") setOpen(false); }}
           placeholder={placeholder || t("search.placeholder")} aria-label={t("nav.search")} role="combobox" aria-expanded={open && sugs.length > 0} aria-autocomplete="list"
           style={{ outline: "none", boxShadow: "none" }} className={`min-w-0 flex-1 bg-transparent placeholder:text-ink-faint ${large ? "text-base" : "text-sm"}`} />
@@ -41,7 +41,7 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder, auto
         <button className="btn-primary !px-3" disabled={!value.trim() || busy} aria-label={t("search.send")}><Send className="h-4 w-4" /></button>
       </form>
       {open && sugs.length > 0 && (
-        <ul role="listbox" className={`absolute inset-x-0 z-20 overflow-hidden ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"} rounded-xl border border-paper-line bg-white shadow-lift`}>
+        <ul role="listbox" className={`absolute inset-x-0 z-20 overflow-hidden ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"} border border-ink bg-paper-card shadow-lift`}>
           {sugs.map((s, i) => (
             <li key={s.type + s.text} role="option" aria-selected={i === hi}>
               <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => submit(s.type === "recent" || s.type === "document" ? s.text : value ? `${value.split(" ").slice(0, -1).join(" ")} ${s.text}`.trim() : s.text)}

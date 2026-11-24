@@ -5,15 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: { DEFAULT: "#101828", soft: "#344054", mute: "#667085", faint: "#98A2B3" },
-        paper: { DEFAULT: "#F5F6F8", card: "#FFFFFF", line: "#E4E7EC", sunk: "#EDEFF3" },
-        tide: { DEFAULT: "#0E7C86", dark: "#0A5D65", soft: "#E3F3F4", ring: "#7CC4CA" },
-        glow: { DEFAULT: "#F6C453", soft: "#FFF4D6" },
-        danger: { DEFAULT: "#C2362B", soft: "#FDECEA" },
-        ok: { DEFAULT: "#1E8A4C", soft: "#E4F5EA" },
+        ink: { DEFAULT: "#17181A", soft: "#3A3D42", mute: "#62666D", faint: "#8E9299" },
+        paper: { DEFAULT: "#F3F4F1", card: "#FBFBF9", line: "#D9DCD4", sunk: "#E8EAE4" },
+        tide: { DEFAULT: "#2D3FA6", dark: "#1F2D80", soft: "#E6E9F5", ring: "#9AA5DC" },
+        glow: { DEFAULT: "#F2B632", soft: "#FBEFCB" },
+        danger: { DEFAULT: "#B23A2E", soft: "#F7E4E1" },
+        ok: { DEFAULT: "#2F7A4B", soft: "#E1F0E6" },
       },
-      fontFamily: { sans: ["Inter", "Noto Sans", "Noto Sans Devanagari", "Noto Sans Tamil", "system-ui", "sans-serif"] },
-      boxShadow: { lift: "0 1px 2px rgba(16,24,40,.06), 0 8px 24px -12px rgba(16,24,40,.18)" },
+      borderRadius: { none: "0", sm: "2px", DEFAULT: "3px", md: "3px", lg: "4px", xl: "4px", "2xl": "6px", full: "9999px" },
+      fontFamily: {
+        sans: ["\"Hanken Grotesk Variable\"", "Noto Sans", "Noto Sans Devanagari", "Noto Sans Tamil", "system-ui", "sans-serif"],
+        serif: ["\"Source Serif 4 Variable\"", "Noto Serif", "Noto Serif Devanagari", "Noto Serif Tamil", "Georgia", "serif"],
+      },
+      boxShadow: { lift: "0 12px 28px -18px rgba(23,24,26,.45)" },
     },
   },
   plugins: [],

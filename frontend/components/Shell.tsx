@@ -46,43 +46,36 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[232px_1fr]">
-      <aside className="hidden border-r border-paper-line bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
-        <div className="flex items-center gap-2.5 px-5 py-5"><Logo /><span className="text-lg font-semibold tracking-tight">Smriti</span></div>
-        <nav className="flex-1 space-y-0.5 px-3" aria-label="Main">
-          {NAV.map(({ href, key, icon: Icon }) => (
-            <Link key={href} href={href} aria-current={active(href) ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active(href) ? "bg-tide-soft text-tide-dark" : "text-ink-soft hover:bg-paper-sunk"}`}>
-              <Icon className="h-[18px] w-[18px]" />{t(key)}
-              {href === "/uploads" && busy > 0 && <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-tide px-1.5 text-[11px] text-white">{busy}</span>}
-            </Link>))}
-        </nav>
-        <div className="space-y-2 border-t border-paper-line p-3">
-          <Link href="/settings" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ${active("/settings") ? "bg-tide-soft text-tide-dark" : "text-ink-soft hover:bg-paper-sunk"}`}><Settings className="h-[18px] w-[18px]" />{t("nav.settings")}</Link>
-          <div className="px-3"><LanguageSwitcher /></div>
-          <div className="flex items-center justify-between gap-2 px-3 py-1">
-            <div className="min-w-0"><p className="truncate text-sm font-medium">{user.display_name}</p><p className="truncate text-xs text-ink-mute">{user.email}</p></div>
-            <button onClick={logout} className="btn-ghost !p-2" aria-label={t("nav.signOut")} title={t("nav.signOut")}><LogOut className="h-4 w-4" /></button>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 border-b border-ink/15 bg-paper/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3 sm:px-6">
+          <Link href="/" className="flex items-baseline gap-2" aria-label="Smriti home"><Logo size={22} /><span className="font-serif text-xl font-semibold tracking-tight">Smriti</span><span className="hidden text-sm text-ink-faint sm:inline" lang="hi">स्मृति</span></Link>
+          <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Main">
+            {NAV.filter((n) => n.href !== "/").map(({ href, key }) => (
+              <Link key={href} href={href} aria-current={active(href) ? "page" : undefined}
+                className={`relative px-3 py-1.5 text-sm font-medium transition-colors ${active(href) ? "text-ink after:absolute after:inset-x-3 after:-bottom-[13px] after:h-0.5 after:bg-ink" : "text-ink-mute hover:text-ink"}`}>
+                {t(key)}{href === "/uploads" && busy > 0 && <span className="ml-1.5 rounded-[3px] bg-glow px-1.5 text-[11px] font-semibold text-ink">{busy}</span>}
+              </Link>))}
+          </nav>
+          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+            <LanguageSwitcher compact />
+            <Link href="/settings" className={`btn-ghost !p-2 ${active("/settings") ? "!text-ink" : ""}`} aria-label={t("nav.settings")} title={`${user.display_name} • ${user.email}`}><Settings className="h-[18px] w-[18px]" /></Link>
+            <button onClick={logout} className="btn-ghost !p-2" aria-label={t("nav.signOut")} title={t("nav.signOut")}><LogOut className="h-[18px] w-[18px]" /></button>
           </div>
         </div>
-      </aside>
+      </header>
 
-      <div className="flex min-w-0 flex-col pb-16 lg:pb-0">
-        <header className="flex items-center justify-between border-b border-paper-line bg-white px-4 py-3 lg:hidden">
-          <div className="flex items-center gap-2"><Logo size={24} /><span className="font-semibold">Smriti</span></div>
-          <div className="flex items-center gap-1"><LanguageSwitcher compact /><Link href="/settings" className="btn-ghost !p-2" aria-label={t("nav.settings")}><Settings className="h-5 w-5" /></Link></div>
-        </header>
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
+      <main className="min-w-0 pb-16 lg:pb-0">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-paper-line bg-white lg:hidden" aria-label="Main">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-ink/15 bg-paper lg:hidden" aria-label="Main">
         {NAV.filter((n) => MOBILE.includes(n.href)).map(({ href, key, icon: Icon }) => (
-          <Link key={href} href={href} className={`relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${active(href) ? "text-tide" : "text-ink-mute"}`}>
-            <Icon className="h-5 w-5" />{t(key)}{href === "/uploads" && busy > 0 && <span className="absolute right-[28%] top-1 h-2 w-2 rounded-full bg-tide" />}
+          <Link key={href} href={href} className={`relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${active(href) ? "text-ink" : "text-ink-mute"}`}>
+            {active(href) && <span className="absolute inset-x-5 top-0 h-0.5 bg-ink" />}
+            <Icon className="h-5 w-5" />{t(key)}{href === "/uploads" && busy > 0 && <span className="absolute right-[28%] top-1 h-2 w-2 bg-glow" />}
           </Link>))}
       </nav>
 
-      {drag && (<div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-tide/90 text-white"><div className="rounded-2xl border-2 border-dashed border-white/70 px-12 py-10 text-center"><UploadCloud className="mx-auto h-10 w-10" /><p className="mt-3 text-lg font-semibold">{t("up.drop")}</p></div></div>)}
+      {drag && (<div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-ink/90 text-white"><div className="rounded-2xl border-2 border-dashed border-white/70 px-12 py-10 text-center"><UploadCloud className="mx-auto h-10 w-10" /><p className="mt-3 text-lg font-semibold">{t("up.drop")}</p></div></div>)}
 
       <div className="pointer-events-none fixed bottom-20 right-4 z-[60] flex flex-col gap-2 lg:bottom-6" aria-live="polite">
         {toasts.map((x) => (<div key={x.id} className={`pointer-events-auto max-w-sm rounded-lg px-4 py-2.5 text-sm shadow-lift ${x.kind === "error" ? "bg-danger text-white" : "bg-ink text-white"}`}>{x.msg}</div>))}

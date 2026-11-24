@@ -21,7 +21,7 @@ function SearchView() {
   const { t } = useI18n();
   const { toast } = useUploads();
   const params = useSearchParams();
-  const [q, setQ] = useState(params.get("q") || "");
+  const [q, setQ] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [parsed, setParsed] = useState<Parsed | null>(null);
   const [results, setResults] = useState<Asset[] | null>(null);
@@ -75,7 +75,7 @@ function SearchView() {
     if (!c) return <span key={i}>{part}</span>;
     const res = results?.find((r) => r.asset_id === c.asset_id);
     const href = res ? assetHref({ ...res, match: res.match ? { ...res.match, page: c.page ?? res.match.page } : ({ page: c.page } as any) }) : cite(c);
-    return <Link key={i} href={href} title={c.title} className="mx-0.5 rounded bg-tide-soft px-1 text-xs font-semibold text-tide-dark hover:bg-tide-ring/50">{part.replace(/[\[\]]/g, "")}</Link>;
+    return <Link key={i} href={href} title={c.title} className="mx-0.5 rounded bg-tide-soft px-1 text-xs font-semibold text-tide hover:bg-tide-ring/50">{part.replace(/[\[\]]/g, "")}</Link>;
   });
 
   return (
@@ -88,7 +88,7 @@ function SearchView() {
           {msgs.map((m) => m.role === "user" ? (
             <div key={m.id} className="ml-8 rounded-2xl rounded-br-sm bg-tide px-3.5 py-2 text-sm text-white">{m.text}</div>
           ) : (
-            <div key={m.id} className={`mr-4 rounded-2xl rounded-bl-sm border px-3.5 py-2.5 text-sm leading-relaxed ${m.error ? "border-danger/30 bg-danger-soft text-danger" : "border-paper-line bg-white"}`}>
+            <div key={m.id} className={`mr-4 rounded-2xl rounded-bl-sm border px-3.5 py-2.5 text-sm leading-relaxed ${m.error ? "border-danger/30 bg-danger-soft text-danger" : "border-paper-line bg-paper-card"}`}>
               {m.streaming && !m.text ? <span className="inline-flex items-center gap-2 text-ink-mute"><Spinner />{t("search.thinking")}</span> : <p className="whitespace-pre-wrap">{renderText(m)}</p>}
               {m.citations && m.citations.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5 border-t border-paper-line pt-2"><span className="text-xs text-ink-mute">{t("search.sources")}:</span>

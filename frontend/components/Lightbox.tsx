@@ -42,21 +42,21 @@ export default function Lightbox({ items, index, onIndex, onClose }: { items: As
         <div className="min-w-0"><p className="truncate text-sm font-medium">{a.caption_user || a.title}</p>
           <p className="truncate text-xs text-white/60">{[fmtDate(a.taken_at, lang), a.place].filter(Boolean).join(" • ")}</p></div>
         <div className="flex items-center gap-1">
-          {a.kind === "photo" && <button className="btn-ghost !text-white hover:!bg-white/10" onClick={() => setZoom((z) => !z)} aria-label="Zoom"><ZoomIn className="h-4 w-4" /></button>}
-          <Link href={`/media/${a.asset_id}`} className="btn-ghost !text-white hover:!bg-white/10" onClick={onClose}><ExternalLink className="h-4 w-4" /><span className="hidden sm:inline">{t("media.details")}</span></Link>
-          <button className="btn-ghost !text-white hover:!bg-white/10" onClick={onClose} aria-label={t("common.close")}><X className="h-5 w-5" /></button>
+          {a.kind === "photo" && <button className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={() => setZoom((z) => !z)} aria-label="Zoom"><ZoomIn className="h-4 w-4" /></button>}
+          <Link href={`/media/${a.asset_id}`} className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={onClose}><ExternalLink className="h-4 w-4" /><span className="hidden sm:inline">{t("media.details")}</span></Link>
+          <button className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={onClose} aria-label={t("common.close")}><X className="h-5 w-5" /></button>
         </div>
       </div>
       <div className="relative flex min-h-0 flex-1 items-center justify-center" onClick={(e) => e.target === e.currentTarget && onClose()}>
-        {index > 0 && <button onClick={() => go(-1)} aria-label="Previous" className="absolute left-2 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20"><ChevronLeft className="h-6 w-6" /></button>}
+        {index > 0 && <button onClick={() => go(-1)} aria-label="Previous" className="absolute left-2 z-10 rounded-[3px] bg-paper-card/10 p-2 hover:bg-paper-card/20"><ChevronLeft className="h-6 w-6" /></button>}
         {a.kind === "video" && full?.video_url
           ? <video key={a.asset_id} src={abs(full.video_url)} poster={abs(a.preview_url)} controls autoPlay className="max-h-full max-w-full" />
           : <div className={`h-full w-full ${zoom ? "overflow-auto" : "flex items-center justify-center"}`}>
               <img key={a.asset_id} src={src} alt={a.caption_user || a.title} onClick={() => setZoom((z) => !z)}
                 className={zoom ? "max-w-none cursor-zoom-out" : "max-h-full max-w-full cursor-zoom-in object-contain"} style={zoom ? { width: "180%" } : undefined} /></div>}
-        {index < items.length - 1 && <button onClick={() => go(1)} aria-label="Next" className="absolute right-2 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20"><ChevronRight className="h-6 w-6" /></button>}
+        {index < items.length - 1 && <button onClick={() => go(1)} aria-label="Next" className="absolute right-2 z-10 rounded-[3px] bg-paper-card/10 p-2 hover:bg-paper-card/20"><ChevronRight className="h-6 w-6" /></button>}
       </div>
-      {a.tags.length > 0 && <div className="flex flex-wrap gap-1.5 px-4 py-3">{a.tags.slice(0, 10).map((x) => <span key={x} className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs">{x}</span>)}</div>}
+      {a.tags.length > 0 && <div className="flex flex-wrap gap-1.5 px-4 py-3">{a.tags.slice(0, 10).map((x) => <span key={x} className="rounded-[3px] bg-paper-card/10 px-2.5 py-0.5 text-xs">{x}</span>)}</div>}
     </div>
   );
 }

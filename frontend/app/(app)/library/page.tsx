@@ -66,8 +66,8 @@ export default function Library() {
       {sel && sel.size > 0 && (
         <div className="fixed inset-x-0 bottom-16 z-30 mx-auto flex w-fit items-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-sm text-white shadow-lift lg:bottom-6">
           <span>{sel.size} {t("lib.selected")}</span>
-          <button className="btn-ghost !text-white hover:!bg-white/10" onClick={() => setPick([...sel])}><FolderPlus className="h-4 w-4" />{t("lib.addTo")}</button>
-          <button className="btn-ghost !text-white hover:!bg-white/10" onClick={del}><Trash2 className="h-4 w-4" />{t("lib.delete")}</button>
+          <button className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={() => setPick([...sel])}><FolderPlus className="h-4 w-4" />{t("lib.addTo")}</button>
+          <button className="btn-ghost !text-white hover:!bg-paper-card/10" onClick={del}><Trash2 className="h-4 w-4" />{t("lib.delete")}</button>
         </div>)}
       <CollectionPicker ids={pick} onClose={() => setPick(null)} onDone={() => setSel(null)} />
       {viewer.node}

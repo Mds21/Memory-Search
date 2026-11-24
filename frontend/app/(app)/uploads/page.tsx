@@ -14,7 +14,7 @@ export default function Uploads() {
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
       <h1 className="h-page mb-5">{t("up.title")}</h1>
       <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); addFiles([...e.dataTransfer.files]); }}
-        className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-tide-ring bg-tide-soft/50 px-6 py-12 text-center">
+        className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-tide-ring bg-tide-soft px-6 py-12 text-center">
         <FileUp className="h-8 w-8 text-tide" />
         <p className="font-medium">{t("up.drop")}</p>
         <div className="flex flex-wrap justify-center gap-2">
