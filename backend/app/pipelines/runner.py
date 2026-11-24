@@ -40,7 +40,8 @@ def run_ingest(asset_id: str, attempts: int = 3) -> None:
         db.add(job)
         asset.status, asset.status_detail = "processing", "starting"
         db.commit()
-        src = registry.store().path(f"{asset.owner_id}/{asset.id}/original{Path(asset.filename).suffix.lower()}")
+        store = registry.store()
+        src = store.path(store.original_key(f"{asset.owner_id}/{asset.id}", Path(asset.filename).suffix.lower()))
         err = None
         for n in range(1, attempts + 1):
             job.attempts = n

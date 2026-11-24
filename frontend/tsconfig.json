@@ -6,5 +6,11 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    // Unfinished components from an earlier version (accounts, phone sign-in, file facts, sharing). Nothing imports
+    // them and they reference APIs that don't exist yet, so they stay out of type checking until finished or removed.
+    "components/AccountCards.tsx", "components/AuthForms.tsx", "components/BrowseTiles.tsx", "components/ChatHistory.tsx",
+    "components/FileFacts.tsx", "components/PasswordGate.tsx", "components/ShareCard.tsx", "lib/share.ts"
+  ]
 }

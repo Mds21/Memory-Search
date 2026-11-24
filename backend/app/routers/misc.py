@@ -135,7 +135,9 @@ def events(request: Request, user: User = Depends(current_user)):
         seen: dict[str, tuple] = {}
         started = time.time()
         yield "retry: 3000\n\n"
-        while time.time() - started < 300:  # EventSource reconnects automatically
+        # Short-lived on purpose: EventSource reconnects by itself (retry above), and a server restart or --reload
+        # waits for open streams to finish, so a long stream would hold it up for minutes.
+        while time.time() - started < 30:
             db = SessionLocal()
             try:
                 for a in db.query(Asset).filter(Asset.owner_id == uid).order_by(Asset.updated_at.desc()).limit(300):

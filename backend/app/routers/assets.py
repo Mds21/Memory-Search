@@ -1,5 +1,6 @@
 import hashlib
 import mimetypes
+import os
 import tempfile
 import zipfile
 from datetime import datetime, timezone
@@ -7,10 +8,11 @@ from pathlib import Path
 
 import numpy as np
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .. import convert
 from ..adapters import registry
 from ..adapters.embeddings import cosine_matrix, from_blob
 from ..config import get_settings
@@ -65,8 +67,9 @@ def ingest_file(db: Session, user_id: str, src: Path, filename: str, sha: str, s
 def _spool(upload: UploadFile) -> tuple[Path, str, int]:
     limit = get_settings().max_upload_mb * 1024 * 1024
     h, size = hashlib.sha256(), 0
-    tmp = Path(tempfile.mkstemp(dir=get_settings().data_path, prefix="up_")[1])
-    with open(tmp, "wb") as f:
+    fd, name = tempfile.mkstemp(dir=get_settings().data_path, prefix="up_")
+    tmp = Path(name)
+    with os.fdopen(fd, "wb") as f:  # reuse mkstemp's handle so it gets closed (Windows can't delete open files)
         while chunk := upload.file.read(1024 * 1024):
             size += len(chunk)
             if size > limit:
@@ -228,8 +231,16 @@ def similar(asset_id: str, limit: int = Query(12, ge=1, le=40), user=Depends(cur
     return {"items": [{**asset_card(assets[i], tg.get(i)), "score": round(scores[i], 3)} for i in ranked if i in assets]}
 
 
+def _attachment(name: str) -> str:
+    from urllib.parse import quote
+    safe = (name.encode("ascii", "ignore").decode() or "file").replace('"', "")
+    return f"attachment; filename=\"{safe}\"; filename*=UTF-8''{quote(name)}"
+
+
 @router.get("/media/{asset_id}/{variant}", include_in_schema=False)
-def media(asset_id: str, variant: str, exp: int, sig: str, db: Session = Depends(get_db)):
+def media(asset_id: str, variant: str, exp: int, sig: str, dl: int = 0, fmt: str | None = None, db: Session = Depends(get_db)):
+    """Signed file access. dl=1 saves instead of showing; with variant=original that is the file exactly as uploaded,
+    under its uploaded name. fmt=jpg|png|webp|pdf|txt|mp4 converts first (see convert.py)."""
     if not verify_media(asset_id, variant, exp, sig):
         raise HTTPException(403, "Link expired or invalid")
     a = db.get(Asset, asset_id)
@@ -241,11 +252,29 @@ def media(asset_id: str, variant: str, exp: int, sig: str, db: Session = Depends
     if variant in ("thumb", "preview"):
         key, mt = f"{base}/{variant}.webp", "image/webp"
     elif variant == "video":
-        key, mt = (f"{base}/proxy.mp4", "video/mp4") if a.has_proxy else (f"{base}/original{ext}", a.mime_type)
+        key, mt = (f"{base}/proxy.mp4", "video/mp4") if a.has_proxy else (store.original_key(base, ext), a.mime_type)
     elif variant == "original":
-        key, mt = f"{base}/original{ext}", a.mime_type
+        key = store.original_key(base, ext)
+        mt = mimetypes.guess_type(key)[0] or a.mime_type  # the stored file's real type (may differ from the name)
     else:
         raise HTTPException(404)
     if not store.exists(key):
         raise HTTPException(404, "File not available")
-    return FileResponse(store.path(key), media_type=mt, headers={"Cache-Control": "private, max-age=600", "Content-Disposition": "inline"})
+
+    if variant == "original" and fmt:
+        fmt = convert.SAME.get(fmt.lower(), fmt.lower())
+        if fmt not in convert.formats_for(a):
+            raise HTTPException(400, f"Can't download this file as {fmt}")
+        headers = {"Cache-Control": "private, max-age=600", "Content-Disposition": _attachment(convert.download_name(a, fmt))}
+        if fmt == "mp4":
+            return FileResponse(store.path(f"{base}/proxy.mp4"), media_type="video/mp4", headers=headers)
+        if fmt == "txt":
+            return Response(convert.extracted_text(db, a), media_type="text/plain; charset=utf-8", headers=headers)
+        try:
+            data, cmt = convert.convert_image(store.path(key), fmt)
+        except Exception:  # noqa: BLE001 - unreadable or unsupported image
+            raise HTTPException(422, "This image can't be converted") from None
+        return Response(data, media_type=cmt, headers=headers)
+
+    disposition = _attachment(convert.download_name(a)) if dl and variant == "original" else "inline"
+    return FileResponse(store.path(key), media_type=mt, headers={"Cache-Control": "private, max-age=600", "Content-Disposition": disposition})

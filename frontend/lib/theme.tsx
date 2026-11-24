@@ -5,7 +5,7 @@ export type ThemePref = "system" | "light" | "dark";
 const KEY = "smriti.theme";
 
 /** Runs before first paint (inlined in <head>) so the page never flashes the wrong theme. */
-export const themeScript = `(function(){try{var p=localStorage.getItem("${KEY}")||"system";var d=p==="dark"||(p==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`;
+export const themeScript = `(function(){try{var p=localStorage.getItem("${KEY}")||"dark";var d=p==="dark"||(p==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`;
 
 function apply(pref: ThemePref) {
   const dark = pref === "dark" || (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -13,10 +13,10 @@ function apply(pref: ThemePref) {
 }
 
 export function useTheme() {
-  const [pref, setPref] = useState<ThemePref>("system");
+  const [pref, setPref] = useState<ThemePref>("dark");
   useEffect(() => {
-    let p: ThemePref = "system";
-    try { p = (localStorage.getItem(KEY) as ThemePref) || "system"; } catch { /* storage unavailable */ }
+    let p: ThemePref = "dark";
+    try { p = (localStorage.getItem(KEY) as ThemePref) || "dark"; } catch { /* storage unavailable */ }
     setPref(p);
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => { let cur: ThemePref = "system"; try { cur = (localStorage.getItem(KEY) as ThemePref) || "system"; } catch { /* ignore */ } if (cur === "system") apply("system"); };
@@ -24,6 +24,6 @@ export function useTheme() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
   const set = useCallback((p: ThemePref) => { setPref(p); try { localStorage.setItem(KEY, p); } catch { /* ignore */ } apply(p); }, []);
-  const cycle = useCallback(() => set(pref === "system" ? "light" : pref === "light" ? "dark" : "system"), [pref, set]);
+  const cycle = useCallback(() => set(pref === "dark" ? "light" : pref === "light" ? "system" : "dark"), [pref, set]);
   return { pref, set, cycle };
 }

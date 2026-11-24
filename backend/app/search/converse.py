@@ -31,6 +31,7 @@ Rules:
 
 TAG = re.compile(r"^\s*<<\s*[A-Z]+\s*>>\s*")
 FULLWIDTH = str.maketrans({"【": "[", "】": "]", "［": "[", "］": "]", "\u200b": None, "\u2060": None, "\ufeff": None})  # 【S1】, hidden characters
+FULLWIDTH.update({0x202F: " ", 0x00A0: " ", 0x2009: " "})  # thin / no-break spaces some models put inside [S1]
 CITE = re.compile(r"\[\s*S\s*(\d+)\s*\]")
 
 _PAN = re.compile(r"\b([A-Z]{5})(\d{4})([A-Z])\b")
@@ -105,8 +106,12 @@ def build_sources(out, *, first: list[str] | None = None, max_chunks: int = 6, m
 
 
 def converse(llm, *, message: str, history: list[dict], out, who: str, total_files: int,
-             primary: list[str] | None = None, finding: str = "", reveal_ids: bool = False) -> Iterator[tuple[str, object]]:
-    """Yields ("token", str)... then ("cites", list[dict]) for the files the reply actually shared."""
+             primary: list[str] | None = None, finding: str = "", reveal_ids: bool = False,
+             small_talk: bool = False) -> Iterator[tuple[str, object]]:
+    """Yields ("token", str)... then ("cites", list[dict]) for the files the reply actually shared.
+
+    small_talk: the message is conversation ("hi", "thanks", "who are you"), so no search ran. The model is told so;
+    otherwise an empty source list after an earlier "robot photo" turn reads as "I couldn't find any robot photos"."""
     ctx, cites = build_sources(out, first=primary)
     if not reveal_ids:  # "share my pan card" shows the card; the number itself only when they ask for it
         ctx, finding = mask_ids(ctx), mask_ids(finding)
@@ -116,8 +121,13 @@ def converse(llm, *, message: str, history: list[dict], out, who: str, total_fil
                 "\n  Say this in your own warm words and cite the file(s) it refers to.")
     system = SYSTEM.format(who=who or "the user", today=datetime.now().strftime("%d %B %Y"), finding=note)
     library = f"Their library has {total_files} files." if total_files else "Their library is empty so far."
-    user = (f"<file_sources>\n{ctx or '(no matching files)'}\n</file_sources>\n{library} Files matching this message: {out.total}.\n\n"
-            f"User message: {message}")
+    if small_talk:
+        user = (f"{library}\nThis message is conversation, not a request for files, so no search was run for it. Reply to it "
+                "naturally and briefly, as yourself. Don't mention files you did or didn't find and don't repeat earlier answers. "
+                f"If it's a greeting, greet back and invite them to ask for something.\n\nUser message: {message}")
+    else:
+        user = (f"<file_sources>\n{ctx or '(no matching files)'}\n</file_sources>\n{library} Files matching this message: {out.total}.\n\n"
+                f"User message: {message}")
     msgs = [{"role": "system", "content": system}, *history, {"role": "user", "content": user}]
 
     head, started, text = "", False, []

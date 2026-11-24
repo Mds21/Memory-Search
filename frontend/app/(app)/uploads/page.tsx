@@ -11,11 +11,11 @@ export default function Uploads() {
   const { items, addFiles, importZip, retry } = useUploads();
   const fileRef = useRef<HTMLInputElement>(null); const zipRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
+    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-8 sm:py-14">
       <h1 className="h-page mb-5">{t("up.title")}</h1>
       <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); addFiles([...e.dataTransfer.files]); }}
-        className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-faint/60 bg-paper-card px-6 py-14 text-center transition-colors hover:border-tide/60">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-paper-line bg-paper shadow-soft"><FileUp className="h-6 w-6 text-ink-mute" strokeWidth={1.5} /></span>
+        className="flex flex-col items-center gap-3 rounded border border-dashed border-ink-faint/60 bg-paper-card px-6 py-16 text-center transition-colors hover:border-tide/60">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-paper-line bg-paper"><FileUp className="h-6 w-6 text-ink-mute" strokeWidth={1.5} /></span>
         <p className="font-medium">{t("up.drop")}</p>
         <div className="flex flex-wrap justify-center gap-2">
           <button className="btn-primary" onClick={() => fileRef.current?.click()}>{t("up.browse")}</button>

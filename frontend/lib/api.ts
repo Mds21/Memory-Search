@@ -1,4 +1,4 @@
-import type { Parsed } from "./types";
+import type { Asset, Parsed } from "./types";
 
 /** API base. Set NEXT_PUBLIC_API_URL at build time, otherwise: localhost -> :8000, any other host -> same origin /api/v1 (reverse proxy). */
 function resolveApi(): string {
@@ -17,6 +17,9 @@ export const tokens = {
   set(t: Tokens | null) { try { t ? localStorage.setItem(KEY, JSON.stringify(t)) : localStorage.removeItem(KEY); } catch { /* storage unavailable */ } },
 };
 export const abs = (u?: string | null) => (u ? (u.startsWith("http") ? u : ORIGIN + u) : "");
+/** Link that saves a file under its own name. The API is on another origin, where browsers ignore <a download>,
+ *  so the server is asked (dl=1) to send it as an attachment. */
+export const downloadHref = (u?: string | null, fmt?: string) => (u ? `${abs(u)}${u.includes("?") ? "&" : "?"}dl=1${fmt ? `&fmt=${fmt}` : ""}` : "");
 
 export class ApiError extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -87,7 +90,7 @@ export interface StreamHandlers {
   parsed?: (d: { parsed: Parsed; conversation_id: string }) => void;
   results?: (d: { results: any[]; total: number; took_ms: number }) => void;
   token?: (text: string) => void;
-  done?: (d: { message_id: string; conversation_id: string; citations: any[] }) => void;
+  done?: (d: { message_id: string; conversation_id: string; citations: any[]; files?: Asset[] }) => void;
   error?: (message: string) => void;
 }
 

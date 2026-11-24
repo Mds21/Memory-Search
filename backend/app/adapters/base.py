@@ -73,6 +73,13 @@ class LLM(ABC):
     @abstractmethod
     def stream(self, system: str, user: str) -> Iterator[str]: ...
 
+    can_chat: bool = False  # True when stream_chat() really generates (multi-turn conversation)
+    fast: bool = False      # quick enough to also help parse every query
+
+    def stream_chat(self, messages: list[dict]) -> Iterator[str]:
+        """Multi-turn chat: messages are {"role": "system"|"user"|"assistant", "content": str}."""
+        raise NotImplementedError(f"{self.name} cannot chat")
+
 
 class OCREngine(ABC):
     @abstractmethod

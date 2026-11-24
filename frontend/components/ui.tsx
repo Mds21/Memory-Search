@@ -6,10 +6,10 @@ export const Spinner = ({ className = "" }: { className?: string }) => <Loader2 
 
 export function Empty({ icon, title, body, action }: { icon?: React.ReactNode; title: string; body?: string; action?: React.ReactNode }) {
   return (
-    <div className="mx-auto flex max-w-sm flex-col items-center rounded-2xl border border-dashed border-paper-line px-6 py-14 text-center">
-      {icon && <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-paper-line bg-paper-card text-ink-mute shadow-soft">{icon}</div>}
-      <h3 className="text-base font-medium">{title}</h3>
-      {body && <p className="mt-1 text-sm text-ink-mute">{body}</p>}
+    <div className="mx-auto flex max-w-sm flex-col items-center rounded border border-dashed border-paper-line px-6 py-16 text-center">
+      {icon && <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-paper-line bg-paper-card text-ink-mute">{icon}</div>}
+      <h3 className="text-[13px] font-medium uppercase tracking-label">{title}</h3>
+      {body && <p className="mt-2 text-[13px] text-ink-mute">{body}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );
@@ -17,7 +17,7 @@ export function Empty({ icon, title, body, action }: { icon?: React.ReactNode; t
 
 export function GridSkeleton({ n = 12 }: { n?: number }) {
   const hs = [160, 220, 190, 250, 170, 210];
-  return <div className="masonry" aria-hidden>{Array.from({ length: n }, (_, i) => <div key={i} className="skeleton rounded-lg" style={{ height: hs[i % hs.length] }} />)}</div>;
+  return <div className="masonry" aria-hidden>{Array.from({ length: n }, (_, i) => <div key={i} className="skeleton rounded-sm" style={{ height: hs[i % hs.length] }} />)}</div>;
 }
 
 export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean }) {
@@ -30,8 +30,8 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-night/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal aria-label={title}>
-      <div className={`max-h-[85vh] w-full overflow-auto animate-rise rounded-t-2xl border border-paper-line bg-paper-card p-6 shadow-lift sm:rounded-2xl ${wide ? "sm:max-w-2xl" : "sm:max-w-md"}`}>
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-base font-medium">{title}</h2>
+      <div className={`max-h-[85vh] w-full overflow-auto animate-rise rounded-t border border-paper-line bg-paper-card p-7 shadow-lift sm:rounded ${wide ? "sm:max-w-2xl" : "sm:max-w-md"}`}>
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-[13px] font-medium uppercase tracking-label">{title}</h2>
           <button className="btn-ghost !p-1.5" onClick={onClose} aria-label="Close"><X className="h-4 w-4" /></button></div>
         {children}
       </div>

@@ -74,6 +74,17 @@ class LocalStore(ObjectStore):
     def exists(self, key):
         return self.path(key).exists()
 
+    def original_key(self, base: str, ext: str) -> str:
+        """Key of an asset's original file. Usually "<base>/original<ext of its filename>", but files stored by an
+        earlier version may carry their real type's extension instead (photo.jfif -> original.jpg, a WebP named
+        .jpeg -> original.webp), so fall back to whatever original.* is there."""
+        exact = f"{base}/original{ext}"
+        if self.exists(exact):
+            return exact
+        folder = self.path(base)
+        found = sorted(folder.glob("original.*")) if folder.is_dir() else []
+        return f"{base}/{found[0].name}" if found else exact
+
     def delete_prefix(self, prefix):
         p = self.path(prefix)
         if p.exists():

@@ -60,24 +60,27 @@ export default function GoogleButton({ onCredential }: { onCredential: (credenti
         g.prompt();  // One Tap: returning users sign in with a single tap
       }
       currentCallback = (c: string) => cb.current(c);
-      const dark = document.documentElement.dataset.theme === "dark";
+      // Google's own button sits invisibly on top of ours (below), so its look never shows and clicks still reach Google.
       box.current.innerHTML = "";
-      g.renderButton(box.current, { type: "standard", theme: dark ? "filled_black" : "outline", size: "large", shape: "rectangular",
-                                    text: "continue_with", logo_alignment: "center", width: Math.min(400, box.current.parentElement?.offsetWidth || 320), locale: lang });
+      g.renderButton(box.current, { type: "standard", theme: "outline", size: "large", shape: "pill",
+                                    text: "continue_with", logo_alignment: "center", width: Math.min(400, box.current.offsetWidth || 320), locale: lang });
       setRendered(true);
     }).catch(() => !cancelled && setNote(t("auth.googleOffline")));
     return () => { cancelled = true; };
   }, [clientId, lang, t]);
 
+  // Our face follows the theme (Google's branding allows a full-color G on a dark or light fill). When Google is ready,
+  // its real button is laid over it at near-zero opacity, so sign-in still goes through Google's own flow.
   return (
     <div className="space-y-2">
-      <div ref={box} className={`w-full justify-center [color-scheme:light] ${rendered ? "flex min-h-[40px]" : "hidden"}`} />
-      {!rendered && (
-        <button type="button" disabled={clientId === undefined}
+      <div className="group relative h-10 w-full">
+        <button type="button" disabled={clientId === undefined} tabIndex={rendered ? -1 : 0} aria-hidden={rendered || undefined}
           onClick={() => setNote(clientId ? t("auth.googleOffline") : t("auth.googleOff"))}
-          className="flex h-10 w-full items-center justify-center gap-3 rounded border border-paper-line bg-paper-card text-sm font-medium text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60">
+          className="flex h-10 w-full items-center justify-center gap-3 rounded-full border border-paper-line bg-paper-card text-[13px] font-medium text-ink transition-colors group-hover:border-ink-faint group-hover:bg-paper-sunk group-focus-within:ring-2 group-focus-within:ring-tide/60 disabled:opacity-60">
           <GoogleG />{t("auth.google")}
-        </button>)}
+        </button>
+        <div ref={box} title={t("auth.google")} className={`absolute inset-0 overflow-hidden rounded-full opacity-[0.011] [color-scheme:light] ${rendered ? "" : "pointer-events-none"}`} />
+      </div>
       {note && <p role="status" className="rounded bg-paper-sunk px-3 py-2 text-center text-xs leading-relaxed text-ink-soft">{note}</p>}
     </div>
   );

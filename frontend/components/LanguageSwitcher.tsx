@@ -12,7 +12,7 @@ export default function LanguageSwitcher({ compact }: { compact?: boolean }) {
     <label className="relative inline-flex items-center gap-2 text-sm text-ink-soft">
       <Languages className="h-4 w-4" aria-hidden />
       <span className="sr-only">Language</span>
-      <select className={`rounded-md border border-paper-line bg-paper-card py-1 pl-2 pr-6 text-sm ${compact ? "w-24" : ""}`} value={lang}
+      <select className={`h-8 rounded-full border border-paper-line bg-paper-card pl-3 pr-7 text-[12px] ${compact ? "w-28" : ""}`} value={lang}
         onChange={(e) => { setLang(e.target.value); if (user) api.patch("/me", { language: e.target.value }).catch(() => {}); }}>
         {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
       </select>

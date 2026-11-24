@@ -17,9 +17,9 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
 
   return (
     <button onClick={click} aria-label={label} aria-pressed={selectMode ? !!selected : undefined}
-      className="group relative block w-full rounded-lg text-left">
-      <div className={`relative w-full overflow-hidden rounded-lg bg-paper-sunk ${a.kind === "document" ? "border border-paper-line" : ""} ${selected ? "ring-2 ring-tide ring-offset-2 ring-offset-paper" : ""}`} style={{ aspectRatio: String(Math.min(Math.max(ratio, 0.6), 1.9)) }}>
-        {a.thumb_url ? <img src={abs(a.preview_url || a.thumb_url)} alt={label} loading="lazy" className={`h-full w-full transition-opacity group-hover:opacity-90 ${a.kind === "document" ? "object-cover object-top" : "object-cover"}`} />
+      className="group relative block w-full rounded-sm text-left">
+      <div className={`relative w-full overflow-hidden rounded-sm bg-paper-sunk ${a.kind === "document" ? "border border-paper-line" : ""} ${selected ? "ring-2 ring-tide ring-offset-2 ring-offset-paper" : ""}`} style={{ aspectRatio: String(Math.min(Math.max(ratio, 0.6), 1.9)) }}>
+        {a.thumb_url ? <img src={abs(a.preview_url || a.thumb_url)} alt={label} loading="lazy" className={`h-full w-full transition-[opacity,filter] group-hover:brightness-110 ${a.kind === "document" ? "object-cover object-top" : "object-cover"}`} />
           : <div className="flex h-full items-center justify-center text-ink-faint">{pending ? <Spinner className="h-6 w-6" /> : <FileText className="h-8 w-8" />}</div>}
         {a.kind === "video" && (<>
           <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-night/55 text-white backdrop-blur"><Play className="h-4 w-4 translate-x-px" fill="currentColor" /></span></span>
@@ -30,10 +30,10 @@ export default function AssetTile({ asset: a, onOpen, selectMode, selected, onSe
         {a.match?.page && <span className="absolute right-2 top-2 rounded-sm bg-paper-card/95 px-2 py-0.5 font-mono text-[11px] tabular-nums text-tide shadow-soft">{t("search.page")} {a.match.page}</span>}
       </div>
       {a.kind !== "document" && (
-        <p className="mt-2 truncate text-xs text-ink-mute">{[a.place, a.taken_at ? new Date(a.taken_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : null].filter(Boolean).join(", ") || <span className="text-ink-faint">{label}</span>}</p>)}
+        <p className="mt-2 truncate text-[11px] uppercase tracking-[0.08em] text-ink-mute">{[a.place, a.taken_at ? new Date(a.taken_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : null].filter(Boolean).join(", ") || <span className="text-ink-faint">{label}</span>}</p>)}
       {(a.kind === "document" || (a.snippet && terms.length > 0 && a.match?.type === "transcript")) && (
         <div className="pt-2.5">
-          <p className="truncate text-sm font-medium">{a.title}</p>
+          <p className="truncate text-[12px] font-medium uppercase tracking-[0.08em]">{a.title}</p>
           {a.snippet && <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-ink-mute">{highlight(a.snippet, terms)}</p>}
         </div>)}
       {a.status === "failed" && a.status_detail && <p className="pt-1 text-xs text-danger">{a.status_detail}</p>}

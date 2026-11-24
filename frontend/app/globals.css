@@ -2,58 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-/* One graphite ramp, three text roles, one accent (indigo), one signature (marigold). Values are "r g b". */
+/* Photo-studio palette: near-black (or warm paper) surfaces, one ochre-gold accent; the photos bring the color.
+   Values are "r g b" so Tailwind opacity modifiers work. Dark is the default look. */
 :root {
   color-scheme: light;
-  --paper: 250 250 250;      --paper-card: 255 255 255;  --paper-sunk: 244 244 245;  --paper-line: 228 228 231;
-  --ink: 24 24 27;           --ink-soft: 82 82 91;       --ink-mute: 113 113 122;    --ink-faint: 161 161 170;
-  --tide: 51 70 196;         --tide-dark: 38 54 163;     --tide-soft: 238 240 251;   --tide-ring: 165 176 236;
-  --glow: 242 182 50;        --glow-soft: 253 243 215;
-  --danger: 220 38 38;       --danger-soft: 253 236 236;
-  --ok: 22 163 74;           --ok-soft: 232 246 236;
+  --paper: 244 242 238;      --paper-card: 255 255 255;  --paper-sunk: 234 231 225;  --paper-line: 222 218 211;
+  --ink: 26 26 26;           --ink-soft: 82 80 77;       --ink-mute: 112 109 104;    --ink-faint: 160 156 150;
+  --tide: 138 108 24;        --tide-dark: 108 84 16;     --tide-soft: 246 239 219;   --tide-ring: 214 193 133;  --on-tide: 255 255 255;
+  --glow: 196 160 58;        --glow-soft: 246 239 219;
+  --danger: 196 48 43;       --danger-soft: 250 232 230;
+  --ok: 38 132 78;           --ok-soft: 228 242 233;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --paper: 20 20 21;         --paper-card: 25 25 27;     --paper-sunk: 35 35 37;     --paper-line: 44 44 47;
-  --ink: 237 237 237;        --ink-soft: 161 161 166;    --ink-mute: 133 133 139;    --ink-faint: 92 92 98;
-  --tide: 138 153 255;       --tide-dark: 183 193 255;   --tide-soft: 30 34 64;      --tide-ring: 58 67 128;
-  --glow: 242 182 50;        --glow-soft: 58 47 18;
-  --danger: 229 72 77;       --danger-soft: 58 26 27;
-  --ok: 76 195 138;          --ok-soft: 21 48 31;
+  --paper: 14 14 14;         --paper-card: 22 22 22;     --paper-sunk: 31 31 31;     --paper-line: 44 44 44;
+  --ink: 232 230 227;        --ink-soft: 170 168 164;    --ink-mute: 128 126 122;    --ink-faint: 88 87 85;
+  --tide: 191 156 58;        --tide-dark: 216 182 90;    --tide-soft: 40 34 18;      --tide-ring: 104 86 36;    --on-tide: 17 17 17;
+  --glow: 191 156 58;        --glow-soft: 40 34 18;
+  --danger: 229 86 80;       --danger-soft: 54 26 25;
+  --ok: 92 186 128;          --ok-soft: 22 44 31;
 }
 
 html, body { height: 100%; }
-body { @apply bg-paper font-sans text-[15px] text-ink antialiased; font-feature-settings: "ss01", "cv11"; }
+body { @apply bg-paper font-sans text-[14px] leading-relaxed text-ink antialiased; }
 h1, h2, h3 { font-weight: 500; }
 :focus-visible { outline: 2px solid rgb(var(--tide)); outline-offset: 2px; border-radius: 4px; }
-::selection { background: rgb(var(--glow)); color: #18181b; }
+::selection { background: rgb(var(--tide)); color: rgb(var(--on-tide)); }
 .tabular { font-variant-numeric: tabular-nums; }
 
 @layer components {
-  .btn { @apply inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-[color,background-color,border-color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50; }
-  .btn-primary { @apply btn bg-ink text-paper shadow-soft hover:bg-ink/85; }
-  .btn-ghost { @apply btn text-ink-soft hover:bg-paper-sunk hover:text-ink; }
-  .btn-outline { @apply btn border border-paper-line bg-paper-card text-ink shadow-soft hover:bg-paper-sunk; }
-  .btn-danger { @apply btn bg-danger text-white hover:bg-danger/90; }
-  .input { @apply h-9 w-full rounded-md border border-paper-line bg-paper-card px-3 text-sm text-ink shadow-soft transition-colors placeholder:text-ink-faint focus:border-tide focus:outline-none focus:ring-2 focus:ring-tide/20; }
-  .card { @apply rounded-xl border border-paper-line bg-paper-card; }
-  .chip { @apply inline-flex h-7 items-center gap-1.5 rounded-md border border-paper-line bg-paper-card px-2.5 text-xs font-medium text-ink-soft transition-colors; }
-  .chip-on { @apply border-tide/30 bg-tide-soft text-tide-dark; }
-  .h-page { @apply font-serif text-[32px] font-medium leading-tight tracking-[-0.01em]; }
-  .label { @apply text-[13px] font-medium text-ink-mute; }
+  /* Display titles: thin, spaced capitals. Used for page titles and the hero only. */
+  .h-display { @apply font-light uppercase tracking-display; }
+  .h-page { @apply text-[26px] font-light uppercase leading-tight tracking-display after:mt-3 after:block after:h-0.5 after:w-6 after:bg-tide sm:text-[30px]; }
+  .eyebrow { @apply text-[11px] font-medium uppercase tracking-label text-ink-mute; }
+  .script { @apply font-script font-normal normal-case tracking-normal; }
+
+  .btn { @apply inline-flex h-9 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-medium transition-[color,background-color,border-color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50; }
+  .btn-pill { @apply h-10 px-6 text-[12px] uppercase tracking-label; }
+  .btn-primary { @apply btn btn-pill bg-tide text-tide-on hover:bg-tide-dark; }
+  .btn-outline { @apply btn btn-pill bg-ink/10 text-ink hover:bg-ink/15; }
+  .btn-ghost { @apply btn text-ink-soft hover:bg-ink/[0.06] hover:text-ink; }
+  .btn-danger { @apply btn btn-pill bg-danger text-white hover:bg-danger/90; }
+  .input { @apply h-10 w-full rounded-full border border-paper-line bg-paper-card px-4 text-[13px] text-ink transition-colors placeholder:text-ink-faint focus:border-tide/70 focus:outline-none focus:ring-2 focus:ring-tide/20; }
+  .card { @apply rounded border border-paper-line bg-paper-card; }
+  .chip { @apply inline-flex h-7 items-center gap-1.5 rounded-full border border-paper-line bg-paper-card px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-soft transition-colors; }
+  .chip-on { @apply border-tide/40 bg-tide-soft text-tide-dark; }
+  .tab { @apply relative pb-1.5 text-[12px] font-medium uppercase tracking-label text-ink-mute transition-colors hover:text-ink; }
+  .tab-on { @apply text-ink after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-ink; }
+  .label { @apply text-[11px] font-medium uppercase tracking-label text-ink-mute; }
   .kbd { @apply inline-flex h-5 min-w-5 items-center justify-center rounded-sm border border-paper-line bg-paper-card px-1 font-mono text-[11px] text-ink-mute; }
+  .bar { @apply block h-0.5 w-6 bg-tide; }
 }
 
-.masonry { column-gap: 16px; columns: 2; }
+.masonry { column-gap: 14px; columns: 2; }
 @media (min-width: 640px) { .masonry { columns: 3; } }
 @media (min-width: 1100px) { .masonry { columns: 4; } }
 @media (min-width: 1500px) { .masonry { columns: 5; } }
-.masonry > * { break-inside: avoid; margin-bottom: 16px; }
+.masonry > * { break-inside: avoid; margin-bottom: 14px; }
 
 /* Loading placeholder: a slow tone shift inside one neutral, only while something is actually loading. */
-.skeleton { background: linear-gradient(90deg, rgb(var(--paper-sunk)) 25%, rgb(var(--paper-line) / .55) 37%, rgb(var(--paper-sunk)) 63%); background-size: 400% 100%; animation: sk 1.4s ease infinite; }
+.skeleton { background: linear-gradient(90deg, rgb(var(--paper-sunk)) 25%, rgb(var(--paper-line) / .6) 37%, rgb(var(--paper-sunk)) 63%); background-size: 400% 100%; animation: sk 1.4s ease infinite; }
 @keyframes sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 @media (prefers-reduced-motion: reduce) { .skeleton, .animate-rise { animation: none; } * { scroll-behavior: auto !important; } }
 
 .maplibregl-map { font-family: inherit; }
-mark.hl { background: linear-gradient(transparent 55%, rgb(var(--glow) / .55) 55%); color: inherit; padding: 0; }
+mark.hl { background: linear-gradient(transparent 55%, rgb(var(--tide) / .45) 55%); color: inherit; padding: 0; }

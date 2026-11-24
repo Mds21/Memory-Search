@@ -26,9 +26,9 @@ export default function GoogleSetup() {
   };
 
   return (
-    <section className="card space-y-4 p-5">
+    <section className="card space-y-5 p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-medium"><GoogleG size={16} />{t("gs.title")}</h2>
+        <h2 className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-label"><GoogleG size={16} />{t("gs.title")}</h2>
         {data && <span className={`flex items-center gap-1.5 text-xs ${on ? "text-ok" : "text-ink-mute"}`}><span className={`h-1.5 w-1.5 ${on ? "bg-ok" : "bg-ink-faint"}`} />{on ? t("gs.on") : t("gs.off")}</span>}
       </div>
       <p className="text-sm text-ink-soft">{t("gs.intro")}</p>

@@ -8,7 +8,7 @@ export interface Asset {
   place: string | null; lat: number | null; lon: number | null; width: number | null; height: number | null;
   duration_ms: number | null; page_count: number | null; language: string | null; tags: string[]; caption_user: string | null;
   score?: number | null; snippet?: string; match?: Match | null; matches?: Match[];
-  original_url?: string; video_url?: string | null; size_bytes?: number; mime_type?: string; years_ago?: number;
+  original_url?: string; video_url?: string | null; download_formats?: string[]; size_bytes?: number; mime_type?: string; years_ago?: number;
 }
 export interface Filters { kinds: Kind[]; date_from: string | null; date_to: string | null; place: string | null; tags: string[]; language: string | null; collection_id: string | null }
 export interface Parsed { raw: string; language: string | null; intent: string; semantic_query: string; semantic_query_en: string | null; filters: Filters; followup: boolean }

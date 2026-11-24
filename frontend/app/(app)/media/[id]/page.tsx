@@ -1,7 +1,8 @@
 "use client";
-import { Download, RefreshCw, Trash2, X } from "lucide-react";
+import { RefreshCw, Trash2, X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import DownloadMenu from "@/components/DownloadMenu";
 import AssetTile from "@/components/AssetTile";
 import { Spinner, fmtBytes, fmtDuration } from "@/components/ui";
 import { useViewer } from "@/components/useViewer";
@@ -79,7 +80,7 @@ function MediaView() {
           {a.status === "failed" && <p className="text-danger">{a.status_detail}</p>}
         </div>
         <div className="flex flex-wrap gap-2">
-          <a className="btn-outline" href={abs(a.original_url)} download><Download className="h-4 w-4" />{t("media.download")}</a>
+          <DownloadMenu asset={a} tone="outline" />
           <button className="btn-outline" onClick={reindex}><RefreshCw className="h-4 w-4" />{t("media.reindex")}</button>
           <button className="btn-outline !text-danger" onClick={del}><Trash2 className="h-4 w-4" />{t("media.delete")}</button>
         </div>

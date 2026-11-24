@@ -1,5 +1,6 @@
 "use client";
-import { ArrowLeft, Download } from "lucide-react";
+import DownloadMenu from "@/components/DownloadMenu";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Spinner, fmtBytes } from "@/components/ui";
@@ -32,11 +33,11 @@ function DocView() {
   body.forEach((c) => { const p = c.page ?? 1; pages.set(p, [...(pages.get(p) || []), c.content]); });
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
+    <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-8 sm:py-14">
       <button className="btn-ghost mb-3 -ml-2" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" />{t("common.close")}</button>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0"><h1 className="h-page truncate">{a.title}</h1><p className="text-sm text-ink-mute">{[a.page_count ? `${a.page_count} ${t("doc.pages").toLowerCase()}` : null, a.size_bytes ? fmtBytes(a.size_bytes) : null, a.language].filter(Boolean).join(" • ")}</p></div>
-        <a className="btn-outline" href={abs(a.original_url)} target="_blank" rel="noreferrer"><Download className="h-4 w-4" />{t("doc.open")}</a>
+        <div className="flex gap-2"><a className="btn-outline" href={abs(a.original_url)} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" />{t("doc.open")}</a><DownloadMenu asset={a} tone="outline" /></div>
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="card min-h-[60vh] overflow-hidden">

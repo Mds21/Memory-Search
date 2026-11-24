@@ -43,16 +43,18 @@ export default function Library() {
   const kinds = [["", "lib.all"], ["photo", "search.photos"], ["video", "search.videos"], ["document", "search.documents"]];
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="h-page">{t("lib.title")} <span className="text-base font-normal text-ink-mute">{total}</span></h1>
+    <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-8 sm:py-14">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div><h1 className="h-page">{t("lib.title")} <span className="ml-2 text-[14px] tabular-nums tracking-normal text-ink-faint">{total}</span></h1></div>
         <div className="flex items-center gap-2">
-          <button className="btn-ghost !p-2" onClick={() => setGrid((g) => !g)} aria-label="Toggle layout">{grid ? <Rows3 className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}</button>
+          <button className="btn-ghost !h-10 !w-10 !p-0" onClick={() => setGrid((g) => !g)} aria-label="Toggle layout">{grid ? <Rows3 className="h-4 w-4" strokeWidth={1.5} /> : <LayoutGrid className="h-4 w-4" strokeWidth={1.5} />}</button>
           <button className={sel ? "btn-outline" : "btn-primary"} onClick={() => setSel(sel ? null : new Set())}>{sel ? t("lib.cancel") : t("lib.select")}</button>
         </div>
       </div>
-      <div className="mb-5 flex flex-wrap items-end gap-3">
-        <div className="flex gap-1.5" role="tablist">{kinds.map(([k, l]) => <button key={k} role="tab" aria-selected={kind === k} className={`chip ${kind === k ? "chip-on" : ""}`} onClick={() => setKind(k)}>{t(l)}</button>)}</div>
+      <p className="label mb-3">{t("lib.filters")}</p>
+      <div className="mb-8 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-paper-line pb-4">
+        <div className="flex gap-6" role="tablist">{kinds.map(([k, l]) => <button key={k} role="tab" aria-selected={kind === k} className={`tab ${kind === k ? "tab-on" : ""}`} onClick={() => setKind(k)}>{t(l)}</button>)}</div>
+        <span className="flex-1" />
         <input type="date" className="input !w-auto" value={from} onChange={(e) => setFrom(e.target.value)} aria-label={t("search.from")} />
         <input type="date" className="input !w-auto" value={to} onChange={(e) => setTo(e.target.value)} aria-label={t("search.to")} />
         <input className="input !w-40" placeholder={t("lib.tag")} value={tag} onChange={(e) => setTag(e.target.value)} />
@@ -64,7 +66,7 @@ export default function Library() {
         {items.length < total && <div className="mt-6 text-center"><button className="btn-outline" onClick={loadMore} disabled={more}>{more ? <Spinner /> : null}{t("lib.loadMore")}</button></div>}
       </>)}
       {sel && sel.size > 0 && (
-        <div className="fixed inset-x-0 bottom-16 z-30 mx-auto flex w-fit items-center gap-2 animate-rise rounded-xl bg-night px-4 py-2 text-sm text-white shadow-lift lg:bottom-6">
+        <div className="fixed inset-x-0 bottom-16 z-30 mx-auto flex w-fit items-center gap-2 animate-rise rounded-full bg-night px-5 py-2 text-[12px] uppercase tracking-label text-white shadow-lift lg:bottom-6">
           <span>{sel.size} {t("lib.selected")}</span>
           <button className="btn-ghost !text-white hover:!bg-white/10" onClick={() => setPick([...sel])}><FolderPlus className="h-4 w-4" />{t("lib.addTo")}</button>
           <button className="btn-ghost !text-white hover:!bg-white/10" onClick={del}><Trash2 className="h-4 w-4" />{t("lib.delete")}</button>

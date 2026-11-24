@@ -30,7 +30,7 @@ const en: Dict = {
   "search.apply": "Apply", "search.moreLikeThis": "More like this", "search.save": "Save search", "search.saved": "Search saved", "search.new": "New chat",
   "search.thinking": "Searching…", "search.sources": "Sources", "search.helpful": "Helpful", "search.notHelpful": "Not helpful", "search.matches": "matches",
   "search.empty": "Ask a question to start", "search.page": "page", "search.thanks": "Thanks for the feedback",
-  "lib.title": "Library", "lib.all": "All", "lib.select": "Select", "lib.cancel": "Cancel", "lib.addTo": "Add to collection", "lib.delete": "Delete",
+  "lib.title": "Library", "lib.filters": "Filters", "chat.view": "View", "dl.original": "Original", "dl.as": "Download as", "dl.onlyOriginal": "Only the original is available for this file", "chat.recent": "Recent chats", "chat.none": "No chats yet. Ask something to start one.", "chat.untitled": "Untitled chat", "chat.delete": "Delete chat", "chat.turns": "questions", "chat.files": "Files in this answer", "chat.allMatches": "All matches", "lib.all": "All", "lib.select": "Select", "lib.cancel": "Cancel", "lib.addTo": "Add to collection", "lib.delete": "Delete",
   "lib.selected": "selected", "lib.deleteConfirm": "Delete the selected items and everything derived from them? This cannot be undone.",
   "lib.tag": "Tag", "lib.noItems": "No items match these filters.", "lib.loadMore": "Load more", "lib.undated": "Undated",
   "tl.title": "Timeline", "tl.pick": "Select a month to see what you added or captured then.", "tl.items": "items",

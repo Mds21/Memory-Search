@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from ..adapters import registry
 from ..adapters.embeddings import cosine_matrix, from_blob, tokenize
 from ..config import get_settings
+from ..convert import formats_for
 from ..models import Asset, AssetTag, Chunk, CollectionItem, Tag
 from ..security import media_url
 from .query_parser import STOP, Filters, ParsedQuery
@@ -116,6 +117,7 @@ def asset_card(a: Asset, tags: list[str] | None = None) -> dict:
         "place": a.place_name, "lat": a.lat, "lon": a.lon, "width": a.width, "height": a.height,
         "duration_ms": a.duration_ms, "page_count": a.page_count, "language": a.language,
         "tags": tags or [], "caption_user": a.caption_user,
+        "download_formats": formats_for(a),  # besides the original: what "Download as" can offer
     }
 
 

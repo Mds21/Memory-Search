@@ -111,8 +111,7 @@ def test_chat_shows_only_cited_files(client, alice, library, fake_llm):
     fake_llm("I found your rental agreement - the refund clause is on page 1 [S1].")
     ev = events(client.post(f"{API}/chat", headers=alice, json={"message": "security deposit refund"}).text)
     done = next(d for e, d in ev if e == "done")
-    assert [f["title"] for f in done["files"]] == ["rental_agreement.pdf"]
-    assert not any(e == "results" for e, _ in ev)  # no list of loose matches
+    assert [f["title"] for f in done["files"]] == ["rental_agreement.pdf"]  # only what the reply cited
 
 
 def test_chat_small_talk_shows_nothing(client, alice, library, fake_llm):
@@ -142,3 +141,78 @@ def test_library_documents_tab_includes_scanned_cards(client, alice, library):
     doc_ids = {a["asset_id"] for a in docs}
     assert not doc_ids & {a["asset_id"] for a in photos}  # nothing is in both tabs
     assert all(a["kind"] == "document" or a.get("doc_type") for a in docs)
+
+
+def test_small_talk_gets_no_file_context():
+    llm = FakeLLM("Hi! What shall I find?")
+    history = [{"role": "user", "content": "any robot photos?"}, {"role": "assistant", "content": "I found a robot photo [S1]."}]
+    ev = list(converse(llm, message="hi", history=history, out=Out(), who="Asha", total_files=3, small_talk=True))
+    sent = llm.seen[0][-1]["content"]
+    assert "<file_sources>" not in sent and "no search was run" in sent and ev[-1] == ("cites", [])
+
+
+def test_chat_files_can_be_viewed_and_downloaded(client, alice, library, fake_llm):
+    fake_llm("Here is your rental agreement [S1].")
+    done = next(d for e, d in events(client.post(f"{API}/chat", headers=alice, json={"message": "rental agreement"}).text) if e == "done")
+    f = done["files"][0]
+    assert f["original_url"].startswith("/api/v1/media/")
+    inline = client.get(f["original_url"])
+    assert inline.status_code == 200 and inline.headers["content-disposition"] == "inline"
+    saved = client.get(f["original_url"] + "&dl=1")
+    assert saved.headers["content-disposition"].startswith('attachment; filename="rental_agreement.pdf"')
+
+
+def test_reopened_chat_brings_back_its_files(client, alice, library, fake_llm):
+    fake_llm("Here is your rental agreement [S1].")
+    done = next(d for e, d in events(client.post(f"{API}/chat", headers=alice, json={"message": "rental agreement"}).text) if e == "done")
+    chats = client.get(f"{API}/conversations", headers=alice).json()["items"]
+    assert chats[0]["id"] == done["conversation_id"]  # most recently active first
+    conv = client.get(f"{API}/conversations/{done['conversation_id']}", headers=alice).json()
+    answer = [m for m in conv["messages"] if m["role"] == "assistant"][-1]
+    assert [f["title"] for f in answer["files"]] == ["rental_agreement.pdf"]
+    assert client.get(answer["files"][0]["original_url"] + "&dl=1").status_code == 200
+
+
+def test_original_found_when_stored_under_its_real_extension(client, alice, library):
+    """Files kept by an earlier version: photo.jfif stored as original.jpg must still open and download."""
+    from pathlib import Path
+
+    from app.db import SessionLocal
+    from app.models import Asset
+    db = SessionLocal()
+    a = db.query(Asset).filter(Asset.filename.like("%.jpg")).first()
+    store = registry.store()
+    base = f"{a.owner_id}/{a.id}"
+    a.filename = Path(a.filename).stem + ".jfif"
+    db.commit()
+    detail = client.get(f"{API}/assets/{a.id}", headers=alice).json()
+    r = client.get(detail["original_url"] + "&dl=1")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("image/jpeg")
+    assert r.headers["content-disposition"].startswith(f'attachment; filename="{a.filename}"')  # exactly as uploaded
+    assert store.original_key(base, ".jfif").endswith("original.jpg")
+    a.filename = Path(a.filename).stem + ".jpg"
+    db.commit()
+    db.close()
+
+
+def test_download_as_other_formats(client, alice, library):
+    import io
+
+    from PIL import Image
+    items = client.get(f"{API}/assets?limit=50", headers=alice).json()["items"]
+    photo = next(i for i in items if i["kind"] == "photo" and i["title"].endswith(".jpg"))
+    doc = next(i for i in items if i["title"] == "rental_agreement.pdf")
+    assert photo["download_formats"] == ["png", "webp", "pdf"] and doc["download_formats"] == ["txt"]
+    url = client.get(f"{API}/assets/{photo['asset_id']}", headers=alice).json()["original_url"]
+    stem = photo["title"].rsplit(".", 1)[0]
+    for fmt, pil, mime in [("png", "PNG", "image/png"), ("webp", "WEBP", "image/webp")]:
+        r = client.get(f"{url}&dl=1&fmt={fmt}")
+        assert r.status_code == 200 and r.headers["content-type"] == mime and Image.open(io.BytesIO(r.content)).format == pil
+        assert r.headers["content-disposition"].startswith(f'attachment; filename="{stem}.{fmt}"')
+    pdf = client.get(f"{url}&dl=1&fmt=pdf")
+    assert pdf.content.startswith(b"%PDF")
+    assert client.get(f"{url}&dl=1&fmt=jpg").status_code == 400  # that's the original's own format
+    assert client.get(f"{url}&dl=1&fmt=exe").status_code == 400
+    durl = client.get(f"{API}/assets/{doc['asset_id']}", headers=alice).json()["original_url"]
+    txt = client.get(f"{durl}&dl=1&fmt=txt")
+    assert txt.headers["content-disposition"].startswith('attachment; filename="rental_agreement.txt"') and b"deposit" in txt.content.lower()
