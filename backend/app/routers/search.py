@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from ..adapters import registry
 from ..adapters.llm import ExtractiveLLM
 from ..db import SessionLocal, get_db
-from ..models import Asset, Conversation, Message, User
+from ..models import Asset, Chunk, Conversation, Message, User
 from ..schemas import ChatIn, SearchIn
 from ..search import smalltalk
 from ..search.answer import build_answer, summary_line
@@ -40,6 +40,19 @@ def search(body: SearchIn, user: User = Depends(current_user), db: Session = Dep
 
 def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n"
+
+
+def _attach_image_text(db, cards: list[dict]) -> None:
+    """Adds the words OCR read in each photo, so the reply can quote them ("the logo says Interior Civil Contractor")."""
+    ids = [c["asset_id"] for c in cards if c.get("kind") != "document"]
+    if not ids:
+        return
+    text: dict[str, str] = {}
+    for aid, content in db.query(Chunk.asset_id, Chunk.content).filter(Chunk.asset_id.in_(ids), Chunk.chunk_type == "ocr_text").all():
+        text[aid] = (text.get(aid, "") + " " + (content or "")).strip()
+    for c in cards:
+        if c["asset_id"] in text:
+            c["ocr_text"] = " ".join(text[c["asset_id"]].split())
 
 
 FIRST_TOKEN_SECONDS = 25  # a model that hasn't started replying by then is too slow: answer offline instead
@@ -120,6 +133,7 @@ def chat(body: ChatIn, user: User = Depends(current_user)):
                     pq = parse_query(body.message, tz=tz, places=_places(db, uid), prev=prev, llm=llm if getattr(llm, "fast", False) else None, lang=lang)
                 yield _sse("parsed", {"parsed": pq.as_dict(), "conversation_id": conv.id})
                 out = run_search(db, uid, pq, limit=30)
+                _attach_image_text(db, out.cards[:10])
                 yield _sse("results", {"results": out.cards, "total": out.total, "took_ms": out.took_ms})
 
             text, cites, model_replied = [], [], False

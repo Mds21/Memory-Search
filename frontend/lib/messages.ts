@@ -5,7 +5,7 @@ export const LANGS = [
 ] as const;
 
 const en: Dict = {
-  "nav.home": "Home", "nav.search": "Search", "nav.library": "Library", "nav.timeline": "Timeline", "nav.map": "Map",
+  "nav.home": "Home", "nav.moments": "Moments", "nav.search": "Search", "nav.library": "Library", "nav.timeline": "Timeline", "nav.map": "Map",
   "nav.collections": "Collections", "nav.uploads": "Uploads", "nav.settings": "Settings", "nav.signOut": "Sign out",
   "auth.signIn": "Sign in", "auth.create": "Create account", "auth.email": "Email", "auth.password": "Password", "auth.name": "Your name",
   "auth.haveAccount": "Already have an account?", "auth.noAccount": "New here?", "auth.tagline": "Find any photo, video or document by describing it",
@@ -30,7 +30,11 @@ const en: Dict = {
   "search.apply": "Apply", "search.moreLikeThis": "More like this", "search.save": "Save search", "search.saved": "Search saved", "search.new": "New chat",
   "search.thinking": "Searching…", "search.sources": "Sources", "search.helpful": "Helpful", "search.notHelpful": "Not helpful", "search.matches": "matches",
   "search.empty": "Ask a question to start", "search.page": "page", "search.thanks": "Thanks for the feedback",
-  "lib.title": "Library", "lib.filters": "Filters", "chat.view": "View", "dl.original": "Original", "dl.as": "Download as", "dl.onlyOriginal": "Only the original is available for this file", "chat.recent": "Recent chats", "chat.none": "No chats yet. Ask something to start one.", "chat.untitled": "Untitled chat", "chat.delete": "Delete chat", "chat.turns": "questions", "chat.files": "Files in this answer", "chat.allMatches": "All matches", "lib.all": "All", "lib.select": "Select", "lib.cancel": "Cancel", "lib.addTo": "Add to collection", "lib.delete": "Delete",
+  "lib.title": "Library", "lib.filters": "Filters", "chat.view": "View", "mo.title": "Moments", "mo.all": "All moments", "mo.for": "Moments for you", "mo.empty": "Moments appear here as your library grows: trips, this day in earlier years, themes like the sea or night skies, and your important documents grouped together.",
+  "mo.play": "Play", "mo.pause": "Pause", "mo.save": "Save as collection", "mo.saved": "Saved to collections", "mo.gone": "This moment isn't available any more", "mo.inside": "In this moment",
+  "mo.onThisDay": "On this day", "mo.trip": "Trip", "mo.event": "Event", "mo.month": "Month", "mo.year": "Year", "mo.place": "Place", "mo.theme": "Theme",
+  "mo.documents": "Documents", "mo.videos": "Videos", "mo.recent": "New", "mo.archive": "Rediscover", "mo.groupTrips": "Trips & events", "mo.groupTime": "Time",
+  "mo.groupThemes": "Themes", "mo.groupDocs": "Documents", "mo.groupOther": "More", "dl.original": "Original", "dl.as": "Download as", "dl.onlyOriginal": "Only the original is available for this file", "chat.recent": "Recent chats", "chat.none": "No chats yet. Ask something to start one.", "chat.untitled": "Untitled chat", "chat.delete": "Delete chat", "chat.turns": "questions", "chat.files": "Files in this answer", "chat.allMatches": "All matches", "lib.all": "All", "lib.select": "Select", "lib.cancel": "Cancel", "lib.addTo": "Add to collection", "lib.delete": "Delete",
   "lib.selected": "selected", "lib.deleteConfirm": "Delete the selected items and everything derived from them? This cannot be undone.",
   "lib.tag": "Tag", "lib.noItems": "No items match these filters.", "lib.loadMore": "Load more", "lib.undated": "Undated",
   "tl.title": "Timeline", "tl.pick": "Select a month to see what you added or captured then.", "tl.items": "items",
@@ -38,7 +42,7 @@ const en: Dict = {
   "col.title": "Collections", "col.new": "New collection", "col.name": "Collection name", "col.create": "Create", "col.empty": "No collections yet. Group photos and documents to find them together.",
   "col.items": "items", "col.rename": "Rename", "col.remove": "Remove from collection", "col.searchInside": "Search in this collection", "col.deleteConfirm": "Delete this collection? The files stay in your library.",
   "col.added": "Added to collection", "col.choose": "Choose a collection",
-  "up.title": "Uploads", "up.drop": "Drop files here", "up.browse": "or choose files", "up.zip": "Import a ZIP", "up.supported": "Photos, videos, PDF, Word, PowerPoint, Excel and text files",
+  "up.title": "Uploads", "up.drop": "Drop files here", "up.browse": "or choose files", "up.zip": "Import a ZIP", "up.supported": "Photos (JPG, JFIF, PNG, HEIC, WebP, AVIF, GIF, TIFF…), videos (MP4, MOV, MKV, AVI, WebM…), PDF, Word, PowerPoint, Excel, OpenDocument, ePub, email, web pages and text files",
   "up.queued": "Queued", "up.processing": "Processing", "up.ready": "Ready", "up.failed": "Failed", "up.retry": "Retry", "up.duplicate": "Already in your library",
   "up.rejected": "Not supported", "up.empty": "Nothing uploading. Drag files anywhere in the app to add them.", "up.uploading": "Uploading",
   "doc.summary": "Summary", "doc.pages": "Pages", "doc.open": "Open original", "doc.noText": "No readable text.", "doc.page": "Page",

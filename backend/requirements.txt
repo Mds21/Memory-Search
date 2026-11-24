@@ -13,6 +13,8 @@ pypdf>=4.2
 python-docx>=1.1
 python-pptx>=0.6.23
 openpyxl>=3.1
+xlrd>=2.0                # old Excel .xls
+pillow-heif>=0.16        # iPhone HEIC/HEIF photos
 dateparser>=1.2
 langdetect>=1.0.9
 # --- dev / test ---
@@ -20,6 +22,6 @@ pytest>=8.0
 reportlab>=4.0
 # --- optional, enable via .env (see README) ---
 # sentence-transformers   -> TEXT_EMBEDDER=st:BAAI/bge-m3
-# open_clip_torch         -> IMAGE_EMBEDDER=openclip
+# open_clip_torch, transformers, torch (CPU: pip install torch --index-url https://download.pytorch.org/whl/cpu)
+#                         -> IMAGE_EMBEDDER=openclip (multilingual CLIP, ~1.7 GB model downloaded on first use)
 # faster-whisper          -> STT=faster_whisper:small
-# pillow-heif             -> HEIC photo support

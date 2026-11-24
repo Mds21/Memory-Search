@@ -12,7 +12,7 @@ import ThemeButton from "./ThemeButton";
 import { Spinner } from "./ui";
 
 const NAV = [
-  { href: "/", key: "nav.home" }, { href: "/search", key: "nav.search" }, { href: "/library", key: "nav.library" },
+  { href: "/", key: "nav.home" }, { href: "/moments", key: "nav.moments" }, { href: "/search", key: "nav.search" }, { href: "/library", key: "nav.library" },
   { href: "/timeline", key: "nav.timeline" }, { href: "/map", key: "nav.map" },
   { href: "/collections", key: "nav.collections" }, { href: "/uploads", key: "nav.uploads" },
 ];

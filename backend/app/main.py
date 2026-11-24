@@ -1,4 +1,5 @@
 import logging
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -13,9 +14,21 @@ from .routers import assets, auth, library, misc, search
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
 
+def _warm_models():
+    try:
+        ie = registry.image_embedder()
+        if ie:
+            ie.embed_text(["warm up"])
+            logging.getLogger("smriti").info("image model ready: %s", ie.name)
+    except Exception as e:  # noqa: BLE001 - missing optional packages: search falls back to text and tags
+        logging.getLogger("smriti").warning("image model unavailable: %s", e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    # Load the image model in the background: it takes ~45 s, and otherwise the first search or upload would wait for it.
+    threading.Thread(target=_warm_models, name="warm-models", daemon=True).start()
     n = runner.resume_pending()
     if n:
         logging.getLogger("smriti").info("resumed %s pending assets", n)

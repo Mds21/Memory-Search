@@ -3,12 +3,13 @@ from collections import defaultdict
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import extract, select
 from sqlalchemy.orm import Session
 
+from .. import moments as moments_engine
 from ..db import get_db
-from ..models import Asset, Conversation, Message, Tag, User
+from ..models import Asset, Collection, CollectionItem, Conversation, Message, Tag, User
 from ..search.query_parser import Filters
 from ..search.retrieval import asset_card, candidate_assets, tags_for
 from ..security import current_user
@@ -90,3 +91,46 @@ def suggest(q: str = Query("", max_length=80), user: User = Depends(current_user
             seen.add(o["text"].lower())
             uniq.append(o)
     return {"items": uniq[:8]}
+
+
+# ---------------- moments ----------------
+
+def _moment_out(db: Session, m, *, full: bool = False) -> dict:
+    ids = m.asset_ids if full else m.asset_ids[:5]
+    assets = {a.id: a for a in db.query(Asset).filter(Asset.id.in_(ids)).all()}
+    tg = tags_for(db, ids)
+    cards = [asset_card(assets[i], tg.get(i)) for i in ids if i in assets]
+    out = {"id": m.id, "type": m.type, "title": m.title, "subtitle": m.subtitle, "when": m.when, "count": len(m.asset_ids),
+           "cover": cards[0] if cards else None, "preview": cards[1:5], **m.extra}
+    if full:
+        out["items"] = cards
+    return out
+
+
+@router.get("/moments")
+def list_moments(user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Stories found in the library (trips, on this day, themes, document groups...), best first."""
+    return {"items": [_moment_out(db, m) for m in moments_engine.build(db, user.id, user.timezone)]}
+
+
+@router.get("/moments/{moment_id}")
+def get_moment(moment_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    m = moments_engine.find(db, user.id, moment_id, user.timezone)
+    if not m:
+        raise HTTPException(404, "This moment isn't available any more")
+    return _moment_out(db, m, full=True)
+
+
+@router.post("/moments/{moment_id}/save", status_code=201)
+def save_moment(moment_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Keeps a moment as a regular collection, so it stays even when the moment changes."""
+    m = moments_engine.find(db, user.id, moment_id, user.timezone)
+    if not m:
+        raise HTTPException(404, "This moment isn't available any more")
+    c = Collection(owner_id=user.id, name=m.title[:160], description=m.subtitle)
+    db.add(c)
+    db.flush()
+    for i, aid in enumerate(m.asset_ids):
+        db.add(CollectionItem(collection_id=c.id, asset_id=aid, position=i))
+    db.commit()
+    return {"collection_id": c.id, "name": c.name, "count": len(m.asset_ids)}

@@ -10,8 +10,11 @@ from pathlib import Path
 
 PHOTO_EXT = {".jpg", ".jpeg", ".jpe", ".jfif", ".pjpeg", ".pjp", ".png", ".apng", ".webp", ".gif", ".bmp", ".dib",
              ".tif", ".tiff", ".heic", ".heif", ".avif", ".ico"}
-VIDEO_EXT = {".mp4", ".mov", ".m4v", ".mkv", ".avi", ".webm", ".mpg", ".mpeg", ".3gp", ".wmv", ".flv", ".ts", ".mts", ".m2ts"}
-DOC_EXT = {".pdf", ".docx", ".pptx", ".xlsx", ".xlsm", ".txt", ".md", ".csv", ".tsv", ".rtf", ".eml", ".log", ".json", ".xml", ".html", ".htm"}
+VIDEO_EXT = {".mp4", ".mov", ".m4v", ".mkv", ".avi", ".webm", ".mpg", ".mpeg", ".3gp", ".3g2", ".wmv", ".flv", ".f4v", ".ts", ".mts",
+             ".m2ts", ".ogv", ".vob"}
+DOC_EXT = {".pdf", ".docx", ".doc", ".pptx", ".ppt", ".xlsx", ".xlsm", ".xls", ".odt", ".ods", ".odp", ".epub", ".rtf", ".eml",
+           ".txt", ".md", ".markdown", ".csv", ".tsv", ".log", ".json", ".yaml", ".yml", ".ini", ".cfg", ".tex",
+           ".xml", ".html", ".htm", ".xhtml", ".srt", ".vtt"}
 
 # (offset, signature, kind, mime)
 _MAGIC: list[tuple[int, bytes, str, str]] = [
@@ -27,6 +30,7 @@ _MAGIC: list[tuple[int, bytes, str, str]] = [
     (0, b"FLV", "video", "video/x-flv"),
     (0, b"\x00\x00\x01\xba", "video", "video/mpeg"), (0, b"\x00\x00\x01\xb3", "video", "video/mpeg"),
     (0, b"0&\xb2u\x8ef\xcf\x11", "video", "video/x-ms-wmv"),
+    (0, b"OggS", "video", "video/ogg"),
 ]
 _FTYP = {  # ISO-BMFF brands (bytes 8..12 after "ftyp")
     b"heic": ("photo", "image/heic"), b"heix": ("photo", "image/heic"), b"mif1": ("photo", "image/heif"), b"msf1": ("photo", "image/heif"),
@@ -40,14 +44,15 @@ _OOXML = {"word/": ("document", "application/vnd.openxmlformats-officedocument.w
 CANON_EXT = {"image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif", "image/bmp": ".bmp", "image/tiff": ".tif", "image/webp": ".webp",
              "image/heic": ".heic", "image/heif": ".heif", "image/avif": ".avif", "image/x-icon": ".ico", "application/pdf": ".pdf",
              "application/rtf": ".rtf", "video/mp4": ".mp4", "video/quicktime": ".mov", "video/webm": ".webm", "video/x-matroska": ".mkv",
-             "video/x-msvideo": ".avi", "video/3gpp": ".3gp", "video/mpeg": ".mpg", "video/x-flv": ".flv", "video/x-ms-wmv": ".wmv"}
+             "video/x-msvideo": ".avi", "video/3gpp": ".3gp", "video/mpeg": ".mpg", "video/x-flv": ".flv", "video/x-ms-wmv": ".wmv",
+             "video/ogg": ".ogv", "video/mp2t": ".ts"}
 
 
 def sniff(path: Path) -> tuple[str, str, str | None] | None:
     """Return (kind, mime, ooxml_ext) from file contents, or None if unrecognised."""
     try:
         with open(path, "rb") as f:
-            head = f.read(64)
+            head = f.read(400)
     except OSError:
         return None
     for off, sig, kind, mime in _MAGIC:
@@ -55,6 +60,9 @@ def sniff(path: Path) -> tuple[str, str, str | None] | None:
             if mime == "video/x-matroska" and b"webm" in head:
                 mime = "video/webm"
             return kind, mime, None
+    for off in (0, 4):  # MPEG transport stream (.ts/.mts; .m2ts has a 4-byte timestamp first): sync byte every 188 bytes
+        if len(head) > off + 188 and head[off] == 0x47 and head[off + 188] == 0x47:
+            return "video", "video/mp2t", None
     if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
         return "photo", "image/webp", None
     if head[:4] == b"RIFF" and head[8:12] == b"AVI ":

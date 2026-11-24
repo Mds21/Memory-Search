@@ -182,7 +182,11 @@ def search(db: Session, owner_id: str, pq: ParsedQuery, *, limit: int = 40, offs
             texts = [t for t in [sq, pq.semantic_query_en] if t]
             qv = np.mean(np.array(ie.embed_text(texts), dtype=np.float32), axis=0)
             sims = cosine_matrix(qv, np.vstack([from_blob(r.image_embedding) for r in img_rows]))
-            ranked = sorted(((r.id, float(s)) for r, s in zip(img_rows, sims) if s >= 0.18), key=lambda x: -x[1])
+            # CLIP scores unrelated photos ~0.1-0.2 and real matches higher, so keep what is close to the best match
+            # (and clearly above the noise floor) rather than everything over a fixed bar, which returned whole libraries.
+            best = float(sims.max())
+            floor = max(cfg.image_min, best - cfg.image_window)
+            ranked = sorted(((r.id, float(s)) for r, s in zip(img_rows, sims) if s >= floor), key=lambda x: -x[1])
             lists["image"] = [c for c, _ in ranked][:cfg.search_top_k]
 
     # R4 metadata (tags, place, filename, user caption) -> asset level

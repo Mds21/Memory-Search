@@ -88,14 +88,8 @@ def describe_and_index(db: Session, asset: Asset, img: Image.Image, *, chunk_typ
 
     visible = desc.visible_text or ""
     if not visible and cfg.ocr_photos and registry.ocr().available:
-        tmp = registry.store().root / "_tmp_ocr.png"
-        try:
-            ocr_img = img.copy()
-            ocr_img.thumbnail((1600, 1600))
-            ocr_img.convert("L").save(tmp)
-            visible = registry.ocr().ocr(tmp)
-        finally:
-            tmp.unlink(missing_ok=True)
+        # own temp file per call (workers run in parallel); confident words only, so plain photos add no noise
+        visible = registry.ocr().ocr_image(img, min_conf=cfg.ocr_min_conf)
     visible = " ".join(visible.split())
     if len(visible) >= 8:
         add_chunk(db, asset, "ocr_text", visible, language=detect_lang(visible), **kw)

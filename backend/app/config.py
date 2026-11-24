@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     access_ttl_min: int = 15
     refresh_ttl_days: int = 30
     media_url_ttl_s: int = 3600
+    doc_types_file: str = ""  # optional JSON with extra or overriding document types (understanding/doc_types.py)
     default_timezone: str = "Asia/Kolkata"
 
     text_embedder: str = "hash"
@@ -28,7 +29,10 @@ class Settings(BaseSettings):
     worker_concurrency: int = 2
     search_top_k: int = 50
     dense_min: float = 0.22      # min cosine for a dense-only hit (hash embedder scale)
+    image_min: float = 0.16     # CLIP text-to-image similarity below this is noise (unrelated ~0.1, matches 0.2+)
+    image_window: float = 0.06  # keep image matches within this of the best one
     ocr_photos: bool = True
+    ocr_min_conf: float = 60  # photos: keep OCR words Tesseract is at least this sure of (0-100)
 
     @property
     def data_path(self) -> Path:

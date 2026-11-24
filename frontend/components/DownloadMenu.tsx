@@ -5,7 +5,10 @@ import { api, downloadHref } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Asset } from "@/lib/types";
 
-const LABEL: Record<string, string> = { jpg: "JPG image", png: "PNG image", webp: "WebP image", pdf: "PDF document", txt: "Text (.txt)", mp4: "MP4 video" };
+const LABEL: Record<string, string> = {
+  jpg: "JPG image", png: "PNG image", webp: "WebP image", gif: "GIF image", bmp: "BMP image", tif: "TIFF image",
+  pdf: "PDF document", txt: "Text (.txt)", docx: "Word (.docx)", mp4: "MP4 video",
+};
 const ext = (name: string) => (name.split(".").pop() || "").toUpperCase();
 
 /**

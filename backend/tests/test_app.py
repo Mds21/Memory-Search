@@ -213,3 +213,22 @@ def test_account_deletion(client):
     assert client.get(f"{API}/me/export", headers=h).status_code == 200
     assert client.delete(f"{API}/me", headers=h).status_code == 204
     assert client.get(f"{API}/me", headers=h).status_code == 401
+
+
+def test_photo_ocr_keeps_only_confident_words():
+    from PIL import Image, ImageDraw, ImageFont
+
+    from app.adapters import registry
+    ocr = registry.ocr()
+    if not ocr.available:
+        import pytest
+        pytest.skip("tesseract not installed")
+    img = Image.new("RGB", (1200, 300), "white")
+    d = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("arial.ttf", 48)
+    except OSError:
+        font = ImageFont.load_default()
+    d.text((40, 100), "Permanent Account Number ABCDE1234F", fill="black", font=font)
+    assert "ABCDE1234F" in ocr.ocr_image(img, min_conf=60)
+    assert ocr.ocr_image(Image.effect_noise((600, 400), 80).convert("RGB"), min_conf=60) == ""  # a photo with no writing

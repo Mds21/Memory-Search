@@ -63,6 +63,8 @@ def _card_line(c: dict) -> str:
         bits.append("facts: " + "; ".join(facts))
     if c.get("tags"):
         bits.append("tags: " + ", ".join(t if isinstance(t, str) else t.get("name", "") for t in c["tags"][:8]))
+    if c.get("ocr_text"):
+        bits.append(f"text in the image: {c['ocr_text'][:400]}")
     if c.get("snippet"):
         bits.append(f"matched text: {c['snippet'][:200]}")
     return " | ".join(bits)

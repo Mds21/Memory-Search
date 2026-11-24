@@ -180,7 +180,7 @@ def test_original_found_when_stored_under_its_real_extension(client, alice, libr
     from app.db import SessionLocal
     from app.models import Asset
     db = SessionLocal()
-    a = db.query(Asset).filter(Asset.filename.like("%.jpg")).first()
+    a = db.query(Asset).filter(Asset.filename.like("%.jpg"), Asset.size_bytes > 1).first()  # a real upload, with a stored file
     store = registry.store()
     base = f"{a.owner_id}/{a.id}"
     a.filename = Path(a.filename).stem + ".jfif"
@@ -202,7 +202,7 @@ def test_download_as_other_formats(client, alice, library):
     items = client.get(f"{API}/assets?limit=50", headers=alice).json()["items"]
     photo = next(i for i in items if i["kind"] == "photo" and i["title"].endswith(".jpg"))
     doc = next(i for i in items if i["title"] == "rental_agreement.pdf")
-    assert photo["download_formats"] == ["png", "webp", "pdf"] and doc["download_formats"] == ["txt"]
+    assert photo["download_formats"] == ["png", "webp", "gif", "bmp", "tif", "pdf"] and doc["download_formats"] == ["txt", "docx"]
     url = client.get(f"{API}/assets/{photo['asset_id']}", headers=alice).json()["original_url"]
     stem = photo["title"].rsplit(".", 1)[0]
     for fmt, pil, mime in [("png", "PNG", "image/png"), ("webp", "WEBP", "image/webp")]:
@@ -216,3 +216,9 @@ def test_download_as_other_formats(client, alice, library):
     durl = client.get(f"{API}/assets/{doc['asset_id']}", headers=alice).json()["original_url"]
     txt = client.get(f"{durl}&dl=1&fmt=txt")
     assert txt.headers["content-disposition"].startswith('attachment; filename="rental_agreement.txt"') and b"deposit" in txt.content.lower()
+
+
+def test_text_read_from_a_photo_reaches_the_model():
+    out = Out(cards=[{"asset_id": "logo", "kind": "photo", "title": "logo.png", "ocr_text": "STAR ART WORKS INTERIOR CIVIL CONTRACTOR"}])
+    ctx, _ = build_sources(out)
+    assert "text in the image: STAR ART WORKS INTERIOR CIVIL CONTRACTOR" in ctx

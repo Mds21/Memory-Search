@@ -13,6 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .. import convert
+from ..filetypes import DOC_EXT, PHOTO_EXT, VIDEO_EXT, classify
 from ..adapters import registry
 from ..adapters.embeddings import cosine_matrix, from_blob
 from ..config import get_settings
@@ -28,14 +29,10 @@ from .common import owned_asset
 
 router = APIRouter(tags=["assets"])
 
-PHOTO = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
-VIDEO = {".mp4", ".mov", ".m4v", ".mkv", ".avi", ".webm", ".mpg", ".mpeg", ".3gp", ".wmv"}
-DOC = {".pdf", ".docx", ".pptx", ".xlsx", ".xlsm", ".txt", ".md", ".csv", ".rtf", ".eml", ".log", ".json"}
-
-
 def kind_of(filename: str) -> str | None:
+    """Kind from the name alone (used before the bytes are available). Uploads use filetypes.classify."""
     e = Path(filename).suffix.lower()
-    return "photo" if e in PHOTO else "video" if e in VIDEO else "document" if e in DOC else None
+    return "photo" if e in PHOTO_EXT else "video" if e in VIDEO_EXT else "document" if e in DOC_EXT else None
 
 
 def detail(db: Session, a: Asset) -> dict:
@@ -48,17 +45,20 @@ def detail(db: Session, a: Asset) -> dict:
 
 
 def ingest_file(db: Session, user_id: str, src: Path, filename: str, sha: str, size: int) -> tuple[str, Asset | None, str | None]:
-    kind = kind_of(filename)
+    kind, mime, ext = classify(src, filename)  # the bytes decide: .jfif is a JPEG, a WebP named .jpg is a WebP
     if not kind:
-        return "rejected", None, f"Unsupported file type: {Path(filename).suffix or 'no extension'}"
+        e = Path(filename).suffix.lower()
+        known = e in PHOTO_EXT or e in VIDEO_EXT or e in DOC_EXT
+        return "rejected", None, (f"This {e} file looks damaged or isn't really a {e} file" if known
+                                  else f"Unsupported file type: {e or 'no extension'}")
     dup = db.query(Asset).filter_by(owner_id=user_id, sha256=sha).first()
     if dup:
         return "duplicate", dup, None
-    a = Asset(owner_id=user_id, kind=kind, filename=filename[:500], mime_type=mimetypes.guess_type(filename)[0] or "application/octet-stream",
+    a = Asset(owner_id=user_id, kind=kind, filename=filename[:500], mime_type=mime or mimetypes.guess_type(filename)[0] or "application/octet-stream",
               size_bytes=size, sha256=sha, status="queued", meta={})
     db.add(a)
     db.flush()
-    registry.store().put_file(f"{user_id}/{a.id}/original{Path(filename).suffix.lower()}", src)
+    registry.store().put_file(f"{user_id}/{a.id}/original{ext}", src)
     db.commit()
     runner.enqueue(a.id)
     return "queued", a, None
@@ -240,7 +240,7 @@ def _attachment(name: str) -> str:
 @router.get("/media/{asset_id}/{variant}", include_in_schema=False)
 def media(asset_id: str, variant: str, exp: int, sig: str, dl: int = 0, fmt: str | None = None, db: Session = Depends(get_db)):
     """Signed file access. dl=1 saves instead of showing; with variant=original that is the file exactly as uploaded,
-    under its uploaded name. fmt=jpg|png|webp|pdf|txt|mp4 converts first (see convert.py)."""
+    under its uploaded name. fmt=jpg|png|webp|gif|bmp|tif|pdf|txt|docx|mp4 converts first (see convert.py)."""
     if not verify_media(asset_id, variant, exp, sig):
         raise HTTPException(403, "Link expired or invalid")
     a = db.get(Asset, asset_id)
@@ -270,6 +270,8 @@ def media(asset_id: str, variant: str, exp: int, sig: str, dl: int = 0, fmt: str
             return FileResponse(store.path(f"{base}/proxy.mp4"), media_type="video/mp4", headers=headers)
         if fmt == "txt":
             return Response(convert.extracted_text(db, a), media_type="text/plain; charset=utf-8", headers=headers)
+        if fmt == "docx":
+            return Response(convert.extracted_docx(db, a), media_type=convert.DOC_FORMATS["docx"], headers=headers)
         try:
             data, cmt = convert.convert_image(store.path(key), fmt)
         except Exception:  # noqa: BLE001 - unreadable or unsupported image

@@ -1,4 +1,5 @@
 """Builds adapter instances from settings. The only place that knows concrete classes."""
+import threading
 import time
 from functools import lru_cache
 
@@ -28,10 +29,23 @@ def text_embedder() -> TextEmbedder:
     return HashEmbedder()
 
 
-@lru_cache
+_image_lock = threading.Lock()
+_image: dict = {}
+
+
 def image_embedder() -> ImageEmbedder | None:
-    kind, _ = _split(get_settings().image_embedder)
-    return OpenClipEmbedder() if kind == "openclip" else None
+    """The image model, loaded once. Workers, the startup warm-up and searches can all ask at the same moment, and
+    a plain cache would then load the ~1.7 GB model several times in parallel, so loading holds a lock."""
+    if "m" in _image:
+        return _image["m"]
+    with _image_lock:
+        if "m" not in _image:
+            kind, _ = _split(get_settings().image_embedder)
+            try:
+                _image["m"] = OpenClipEmbedder() if kind == "openclip" else None
+            except ImportError:  # optional packages not installed: text, tags and OCR still work
+                _image["m"] = None
+        return _image["m"]
 
 
 @lru_cache

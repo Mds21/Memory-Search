@@ -1,7 +1,9 @@
 import re
+import uuid
 from datetime import datetime, timezone
 
 from langdetect import DetectorFactory, detect
+from sqlalchemy import delete, event
 from sqlalchemy.orm import Session
 
 from ..adapters import registry
@@ -55,25 +57,54 @@ def add_image_chunk(db: Session, asset: Asset, image_bytes: bytes, chunk_type: s
 
 
 def upsert_tags(db: Session, asset: Asset, names: list[str], source: str = "auto") -> None:
-    have = {t.tag_id for t in db.query(AssetTag).filter_by(asset_id=asset.id).all()}
+    """Writes nothing until the pipeline commits (see clear_derived): new tags get their id up front instead of a flush."""
+    pending = db.info.setdefault("clear", {})
+    have = {t.tag_id for t in db.query(AssetTag).filter_by(asset_id=asset.id).all()
+            if asset.id not in pending or (pending[asset.id] and t.source != "auto")}  # rows about to be cleared don't count
+    have |= {at.tag_id for at in db.new if isinstance(at, AssetTag) and at.asset_id == asset.id}
+    new_tags = db.info.setdefault("new_tags", {})
     for raw in names:
         name = raw.strip().lower()[:60]
         if not name:
             continue
-        tag = db.query(Tag).filter_by(owner_id=asset.owner_id, name=name).first()
+        key = (asset.owner_id, name)
+        tag = new_tags.get(key) or db.query(Tag).filter_by(owner_id=asset.owner_id, name=name).first()
         if not tag:
-            tag = Tag(owner_id=asset.owner_id, name=name)
+            tag = Tag(id=uuid.uuid4().hex, owner_id=asset.owner_id, name=name)
             db.add(tag)
-            db.flush()
+            new_tags[key] = tag
         if tag.id not in have:
             db.add(AssetTag(asset_id=asset.id, tag_id=tag.id, source=source))
             have.add(tag.id)
 
 
 def clear_derived(db: Session, asset: Asset, keep_user_tags: bool = True) -> None:
-    db.query(Chunk).filter_by(asset_id=asset.id).delete()
-    q = db.query(AssetTag).filter_by(asset_id=asset.id)
-    if keep_user_tags:
-        q = q.filter(AssetTag.source == "auto")
-    q.delete()
-    db.flush()
+    """Drop the asset's chunks and auto tags - when the pipeline commits, not now.
+
+    SQLite allows one writer at a time. Deleting here would take the write lock and keep it through OCR, captioning and
+    the image model (seconds to minutes per file), so other uploads and workers failed with "database is locked".
+    The deletes run in the same short final write as the new rows (see _apply_pending_clears)."""
+    db.info.setdefault("clear", {})[asset.id] = keep_user_tags
+
+
+@event.listens_for(Session, "before_flush")
+def _apply_pending_clears(session: Session, *_):
+    pending = session.info.pop("clear", None)
+    if not pending:
+        return
+    conn = session.connection()
+    for asset_id, keep_user_tags in pending.items():
+        conn.execute(delete(Chunk).where(Chunk.asset_id == asset_id))
+        q = delete(AssetTag).where(AssetTag.asset_id == asset_id)
+        conn.execute(q.where(AssetTag.source == "auto") if keep_user_tags else q)
+
+
+@event.listens_for(Session, "after_rollback")
+def _forget_pending(session: Session):
+    session.info.pop("clear", None)
+    session.info.pop("new_tags", None)
+
+
+@event.listens_for(Session, "after_commit")
+def _forget_new_tags(session: Session):
+    session.info.pop("new_tags", None)

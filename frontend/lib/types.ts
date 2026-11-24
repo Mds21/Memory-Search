@@ -15,4 +15,8 @@ export interface Parsed { raw: string; language: string | null; intent: string; 
 export interface Citation { label: string; asset_id: string; title: string; page: number | null; start_ms: number | null; chunk_id: string }
 export interface User { id: string; email: string; display_name: string | null; language: string; timezone: string; is_admin: boolean }
 export interface Collection { id: string; name: string; description: string | null; count: number; covers: Asset[]; items?: Asset[] }
+export interface Moment {
+  id: string; type: string; title: string; subtitle: string; when: string | null; count: number;
+  cover: Asset | null; preview: Asset[]; items?: Asset[]; place?: string | null;
+}
 export interface SavedSearch { id: string; name: string | null; query: { query?: string; parsed?: Parsed }; pinned: boolean }

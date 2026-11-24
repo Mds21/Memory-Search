@@ -13,6 +13,7 @@ os.environ["JWT_SECRET"] = "test-secret-test-secret-test-secret-123"
 os.environ["WORKER_CONCURRENCY"] = "2"
 os.environ["LLM"] = "extractive"  # never call a real model (local Ollama or a cloud API) from tests
 os.environ["GROQ_API_KEY"] = ""
+os.environ["IMAGE_EMBEDDER"] = "none"  # the CLIP model is large; search falls back to text and tags in tests
 
 import pytest
 from fastapi.testclient import TestClient

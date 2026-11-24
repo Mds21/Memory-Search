@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AssetTile from "@/components/AssetTile";
 import PhotoWall from "@/components/PhotoWall";
+import MomentsRow from "@/components/MomentsRow";
 import RecentChats from "@/components/RecentChats";
 import SearchBar from "@/components/SearchBar";
 import { Empty, GridSkeleton } from "@/components/ui";
@@ -29,7 +30,6 @@ export default function Home() {
   const [q, setQ] = useState("");
   const [recent, setRecent] = useState<Asset[] | null>(null);
   const [total, setTotal] = useState(0);
-  const [otd, setOtd] = useState<Asset[]>([]);
   const [saved, setSaved] = useState<SavedSearch[]>([]);
   const go = (v: string) => router.push(`/search?q=${encodeURIComponent(v)}`);
 
@@ -37,11 +37,9 @@ export default function Home() {
     api.get<{ items: Asset[]; total: number }>("/assets?limit=12").then((r) => { setRecent(r.items); setTotal(r.total); }).catch(() => setRecent([]));
   }, [tick]);
   useEffect(() => {
-    api.get<{ items: Asset[] }>("/on-this-day").then((r) => setOtd(r.items)).catch(() => {});
     api.get<{ items: SavedSearch[] }>("/saved-searches").then((r) => setSaved(r.items)).catch(() => {});
   }, []);
-  const all = [...otd, ...(recent || [])];
-  const viewer = useViewer(all);
+  const viewer = useViewer(recent || []);  // "On this day" now lives in Moments above
 
   const Section = ({ title, meta, children, href }: { title: string; meta?: React.ReactNode; href?: string; children: React.ReactNode }) => (
     <section className="mt-16">
@@ -80,6 +78,7 @@ export default function Home() {
       </section>
 
       <div className="mx-auto max-w-[1440px] px-4 pb-20 sm:px-8">
+        <MomentsRow />
         <RecentChats />
         {recent && total === 0 ? (
           <div className="mt-16"><Empty icon={<Upload className="h-6 w-6" strokeWidth={1.25} />} title={t("home.emptyTitle")} body={t("home.emptyBody")}
@@ -88,11 +87,6 @@ export default function Home() {
           {saved.length > 0 && (
             <Section title={t("home.saved")}>
               <div className="flex flex-wrap gap-2">{saved.map((s) => <button key={s.id} className="chip hover:border-tide/50 hover:text-ink" onClick={() => go(s.query.query || s.name || "")}>{s.name || s.query.query}</button>)}</div>
-            </Section>)}
-          {otd.length > 0 && (
-            <Section title={t("home.onThisDay")}>
-              <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2">{otd.map((a) => (
-                <div key={a.asset_id} className="w-52 shrink-0"><AssetTile asset={a} onOpen={viewer.open} /><p className="mt-1 text-[11px] uppercase tracking-label text-ink-faint">{a.years_ago} {a.years_ago === 1 ? "year" : "years"} ago</p></div>))}</div>
             </Section>)}
           <Section title={t("home.recent")} meta={recent ? total.toLocaleString() : undefined} href="/library">
             {!recent ? <GridSkeleton n={8} /> : <div className="masonry">{recent.map((a) => <AssetTile key={a.asset_id} asset={a} onOpen={viewer.open} />)}</div>}
