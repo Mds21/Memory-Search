@@ -1,3 +1,4 @@
+import ServerStatus from "@/components/ServerStatus";
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/roboto-mono";
 import "@fontsource/kaushan-script";
@@ -16,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
-      <body><I18nProvider><AuthProvider>{children}</AuthProvider></I18nProvider></body>
+      <body><I18nProvider><AuthProvider>{children}</AuthProvider><ServerStatus /></I18nProvider></body>
     </html>
   );
 }

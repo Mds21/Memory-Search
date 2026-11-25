@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import AssetTile from "@/components/AssetTile";
 import { Empty, GridSkeleton, Spinner } from "@/components/ui";
 import { useViewer } from "@/components/useViewer";
-import { api } from "@/lib/api";
+import { api, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Asset } from "@/lib/types";
 import { monthBounds, monthLabel } from "@/lib/util";
@@ -17,12 +17,12 @@ export default function Timeline() {
   const [items, setItems] = useState<Asset[] | null>(null);
   const viewer = useViewer(items || []);
 
-  useEffect(() => { api.get<{ items: Bucket[] }>("/timeline").then((r) => { setBuckets(r.items); const last = r.items[r.items.length - 1]; if (last) setSel(last.period); }).catch(() => setBuckets([])); }, []);
+  useEffect(() => { api.get<{ items: Bucket[] }>("/timeline").then((r) => { setBuckets(r.items); const last = r.items[r.items.length - 1]; if (last) setSel(last.period); }).catch(emptyUnlessOffline(setBuckets)); }, []);
   useEffect(() => {
     if (!sel) return;
     setItems(null);
     const { from, to } = monthBounds(sel);
-    api.get<{ items: Asset[] }>(`/assets?date_from=${from}&date_to=${to}&limit=200`).then((r) => setItems(r.items)).catch(() => setItems([]));
+    api.get<{ items: Asset[] }>(`/assets?date_from=${from}&date_to=${to}&limit=200`).then((r) => setItems(r.items)).catch(emptyUnlessOffline(setItems));
   }, [sel]);
   const max = Math.max(1, ...(buckets || []).map((b) => b.count));
 

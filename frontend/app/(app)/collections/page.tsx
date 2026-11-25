@@ -3,7 +3,7 @@ import { FolderOpen, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Empty, Spinner } from "@/components/ui";
-import { abs, api } from "@/lib/api";
+import { abs, api, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
 
@@ -11,7 +11,7 @@ export default function Collections() {
   const { t } = useI18n();
   const [items, setItems] = useState<Collection[] | null>(null);
   const [name, setName] = useState("");
-  const load = () => api.get<{ items: Collection[] }>("/collections").then((r) => setItems(r.items)).catch(() => setItems([]));
+  const load = () => api.get<{ items: Collection[] }>("/collections").then((r) => setItems(r.items)).catch(emptyUnlessOffline(setItems));
   useEffect(() => { load(); }, []);
   const create = async () => { if (!name.trim()) return; await api.post("/collections", { name }); setName(""); load(); };
   return (

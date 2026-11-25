@@ -1,6 +1,17 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { API, api, tokens } from "./api";
+import { API, api, isOffline, tokens } from "./api";
+
+/** Phones drop off Wi-Fi and mobile data mid-upload: retry a few times (5 s, 15 s, 45 s) before calling it failed. */
+async function withRetry<T>(send: () => Promise<T>, onWait: (note: string) => void): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try { return await send(); } catch (e) {
+      if (!isOffline(e) || attempt >= 3) throw e;
+      onWait("Connection lost, retrying…");
+      await new Promise((r) => setTimeout(r, 5000 * 3 ** attempt));
+    }
+  }
+}
 
 export type UpStatus = "uploading" | "queued" | "processing" | "ready" | "failed" | "duplicate" | "rejected";
 export interface UpItem { key: string; name: string; status: UpStatus; progress: number; assetId?: string; detail?: string | null }
@@ -42,7 +53,7 @@ export function UploadsProvider({ children }: { children: React.ReactNode }) {
       setItems((xs) => [{ key, name: f.name, status: "uploading", progress: 0 }, ...xs]);
       queue.current.push(async () => {
         try {
-          const r = await api.upload("/assets", [f], (p) => patch(key, { progress: p }));
+          const r = await withRetry(() => api.upload("/assets", [f], (p) => patch(key, { progress: p })), (n) => patch(key, { status: "uploading", progress: 0, detail: n }));
           const it = r.items[0];
           patch(key, { status: it.status as UpStatus, assetId: it.asset?.asset_id, progress: 100, detail: it.error, ...(it.status === "queued" ? { status: it.asset?.status === "ready" ? "ready" : "queued" } : {}) });
           setTick((t) => t + 1);
@@ -57,7 +68,7 @@ export function UploadsProvider({ children }: { children: React.ReactNode }) {
     setItems((xs) => [{ key, name: f.name, status: "uploading", progress: 0 }, ...xs]);
     queue.current.push(async () => {
       try {
-        const r = await api.upload("/imports/zip", [f], (p) => patch(key, { progress: p }));
+        const r = await withRetry(() => api.upload("/imports/zip", [f], (p) => patch(key, { progress: p })), (n) => patch(key, { status: "uploading", progress: 0, detail: n }));
         patch(key, { status: "ready", progress: 100, detail: `${r.items.length} files` });
         setItems((xs) => [...r.items.map((it: any, i: number) => ({ key: `z${++seq}`, name: it.filename, status: (it.status === "queued" ? "queued" : it.status) as UpStatus, progress: 100, assetId: it.asset?.asset_id, detail: it.error })), ...xs]);
         setTick((t) => t + 1);

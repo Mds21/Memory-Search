@@ -33,12 +33,39 @@ async function refresh(): Promise<boolean> {
   return refreshing;
 }
 
+/* Is the library server reachable? A failed request must not look like an empty library ("my photos were deleted"):
+ * pages keep their loading state and ServerStatus shows a banner until the server answers again. */
+type Listener = (online: boolean) => void;
+const listeners = new Set<Listener>();
+let online = true;
+export const server = {
+  get online() { return online; },
+  subscribe(fn: Listener) { listeners.add(fn); return () => { listeners.delete(fn); }; },
+  set(v: boolean) { if (v !== online) { online = v; listeners.forEach((fn) => fn(v)); } },
+};
+/** Gateway errors from the tunnel/proxy in front of the server: it is down or unreachable, not refusing the request. */
+export const UNREACHABLE = new Set([502, 503, 504, 521, 522, 523, 524, 530]);
+export const isOffline = (e: unknown) => e instanceof ApiError && (e.status === 0 || UNREACHABLE.has(e.status));
+/** For .catch(): show an empty list for real errors, but keep loading while the server is unreachable. */
+export const emptyUnlessOffline = <T,>(set: (v: T[]) => void) => (e: unknown) => { if (!isOffline(e)) set([]); };
+
 export async function raw(path: string, init: RequestInit = {}, retry = true): Promise<Response> {
   const headers = new Headers(init.headers);
   const t = tokens.get();
   if (t) headers.set("Authorization", `Bearer ${t.access_token}`);
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-  const res = await fetch(API + path, { ...init, headers });
+  let res: Response;
+  try {
+    res = await fetch(API + path, { ...init, headers });
+  } catch {
+    server.set(false);
+    throw new ApiError(0, "Can't reach your Memory Search server");
+  }
+  if (UNREACHABLE.has(res.status)) {
+    server.set(false);
+    throw new ApiError(res.status, "Can't reach your Memory Search server");
+  }
+  server.set(true);
   if (res.status === 401 && retry && (await refresh())) return raw(path, init, false);
   return res;
 }
@@ -73,12 +100,15 @@ export const api = {
         xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100));
         xhr.onload = async () => {
           if (xhr.status === 401 && retry && (await refresh())) return send(false);
+          if (UNREACHABLE.has(xhr.status)) { server.set(false); return reject(new ApiError(xhr.status, "Can't reach your Memory Search server")); }
+          if (xhr.status === 413) return reject(new ApiError(413, "This file is too large to upload through the internet link (limit 100 MB)"));
+          server.set(true);
           if (xhr.status >= 200 && xhr.status < 300) return resolve(JSON.parse(xhr.responseText));
           let msg = xhr.statusText;
           try { msg = JSON.parse(xhr.responseText).detail || msg; } catch { /* ignore */ }
           reject(new ApiError(xhr.status, String(msg)));
         };
-        xhr.onerror = () => reject(new ApiError(0, "Cannot reach the server"));
+        xhr.onerror = () => { server.set(false); reject(new ApiError(0, "Can't reach your Memory Search server")); };
         xhr.send(fd);
       };
       send(true);

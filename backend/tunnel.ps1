@@ -1,3 +1,3 @@
-# Exposes the local backend (port 8000) at a public https address for the Vercel site.
-# Quick tunnels get a new random address each start; set it as NEXT_PUBLIC_API_URL on Vercel and redeploy.
-& 'C:\Program Files (x86)\cloudflared\cloudflared.exe' tunnel --no-autoupdate --url http://localhost:8000
+# Keeps the public link to this backend alive and the Vercel site pointed at it (restarts the tunnel when it drops,
+# redeploys the site when the address changes). See public_link.py.
+& "$PSScriptRoot\.venv\Scripts\python.exe" "$PSScriptRoot\public_link.py"

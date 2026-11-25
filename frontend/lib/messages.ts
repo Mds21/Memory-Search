@@ -5,6 +5,7 @@ export const LANGS = [
 ] as const;
 
 const en: Dict = {
+  "server.offline": "Can't reach your Memory Search server", "server.offlineHint": "Your files are safe. The computer running it may be asleep or offline, or the link is restarting. This page will reload when it's back.", "server.retry": "Retry",
   "nav.home": "Home", "nav.moments": "Moments", "nav.search": "Search", "nav.library": "Library", "nav.timeline": "Timeline", "nav.map": "Map",
   "nav.collections": "Collections", "nav.uploads": "Uploads", "nav.settings": "Settings", "nav.signOut": "Sign out",
   "auth.signIn": "Sign in", "auth.create": "Create account", "auth.email": "Email", "auth.password": "Password", "auth.name": "Your name",
@@ -57,6 +58,7 @@ const en: Dict = {
 };
 
 const hi: Dict = {
+  "server.offline": "आपके Memory Search सर्वर तक नहीं पहुँच पा रहे", "server.offlineHint": "आपकी फ़ाइलें सुरक्षित हैं। सर्वर वाला कंप्यूटर बंद या ऑफ़लाइन हो सकता है। वापस आने पर यह पेज अपने-आप रीलोड होगा।", "server.retry": "फिर कोशिश करें",
   "nav.home": "होम", "nav.search": "खोज", "nav.library": "लाइब्रेरी", "nav.timeline": "समयरेखा", "nav.map": "नक्शा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्स", "nav.signOut": "साइन आउट",
   "auth.signIn": "साइन इन", "auth.create": "खाता बनाएँ", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "आपका नाम", "auth.haveAccount": "पहले से खाता है?", "auth.noAccount": "नए हैं?", "auth.tagline": "बताकर कोई भी फ़ोटो, वीडियो या दस्तावेज़ खोजें", "auth.passwordHint": "कम से कम 8 अक्षर",
   "home.title": "आप क्या खोज रहे हैं?", "home.placeholder": "किसी फ़ोटो, वीडियो या दस्तावेज़ का वर्णन करें", "home.onThisDay": "आज के दिन", "home.recent": "हाल में जोड़े गए", "home.saved": "सहेजी गई खोजें", "home.try": "पूछकर देखें",
@@ -75,6 +77,7 @@ const hi: Dict = {
 };
 
 const mr: Dict = {
+  "server.offline": "तुमच्या Memory Search सर्व्हरपर्यंत पोहोचता येत नाही", "server.offlineHint": "तुमच्या फाइल्स सुरक्षित आहेत. सर्व्हर असलेला संगणक बंद किंवा ऑफलाइन असू शकतो. तो परत आल्यावर हे पेज आपोआप रीलोड होईल.", "server.retry": "पुन्हा प्रयत्न करा",
   "nav.home": "मुख्यपृष्ठ", "nav.search": "शोध", "nav.library": "लायब्ररी", "nav.timeline": "कालरेषा", "nav.map": "नकाशा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्ज", "nav.signOut": "साइन आउट",
   "auth.signIn": "साइन इन", "auth.create": "खाते तयार करा", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "तुमचे नाव", "auth.haveAccount": "आधीच खाते आहे?", "auth.noAccount": "नवीन आहात?", "auth.tagline": "वर्णन करून कोणताही फोटो, व्हिडिओ किंवा दस्तऐवज शोधा",
   "home.title": "तुम्ही काय शोधत आहात?", "home.onThisDay": "या दिवशी", "home.recent": "अलीकडे जोडलेले", "home.saved": "जतन केलेले शोध", "home.try": "विचारून पहा", "home.emptyTitle": "तुमची लायब्ररी रिकामी आहे", "home.emptyBody": "फोटो, व्हिडिओ किंवा दस्तऐवज अपलोड करा आणि अर्थाने शोधा.", "home.upload": "फाइल्स अपलोड करा",
@@ -87,6 +90,7 @@ const mr: Dict = {
 };
 
 const ta: Dict = {
+  "server.offline": "உங்கள் Memory Search சேவையகத்தை அணுக முடியவில்லை", "server.offlineHint": "உங்கள் கோப்புகள் பாதுகாப்பாக உள்ளன. சேவையகக் கணினி அணைக்கப்பட்டிருக்கலாம். அது திரும்பியதும் இந்தப் பக்கம் தானாக மீண்டும் ஏறும்.", "server.retry": "மீண்டும் முயல்க",
   "nav.home": "முகப்பு", "nav.search": "தேடல்", "nav.library": "நூலகம்", "nav.timeline": "காலவரிசை", "nav.map": "வரைபடம்", "nav.collections": "தொகுப்புகள்", "nav.uploads": "பதிவேற்றங்கள்", "nav.settings": "அமைப்புகள்", "nav.signOut": "வெளியேறு",
   "auth.signIn": "உள்நுழை", "auth.create": "கணக்கை உருவாக்கு", "auth.email": "மின்னஞ்சல்", "auth.password": "கடவுச்சொல்", "auth.name": "உங்கள் பெயர்", "auth.haveAccount": "ஏற்கனவே கணக்கு உள்ளதா?", "auth.noAccount": "புதியவரா?", "auth.tagline": "விவரித்துச் சொல்லி எந்தப் புகைப்படம், காணொளி, ஆவணத்தையும் கண்டறியுங்கள்",
   "home.title": "எதைத் தேடுகிறீர்கள்?", "home.onThisDay": "இந்த நாளில்", "home.recent": "சமீபத்தில் சேர்த்தவை", "home.saved": "சேமித்த தேடல்கள்", "home.try": "கேட்டுப் பாருங்கள்", "home.emptyTitle": "உங்கள் நூலகம் காலியாக உள்ளது", "home.emptyBody": "புகைப்படங்கள், காணொளிகள், ஆவணங்களைப் பதிவேற்றி பொருளின் அடிப்படையில் தேடுங்கள்.", "home.upload": "கோப்புகளைப் பதிவேற்று",
@@ -99,6 +103,7 @@ const ta: Dict = {
 };
 
 const es: Dict = {
+  "server.offline": "No se puede conectar con tu servidor de Memory Search", "server.offlineHint": "Tus archivos están a salvo. El ordenador que lo ejecuta puede estar apagado o sin conexión. La página se recargará cuando vuelva.", "server.retry": "Reintentar",
   "nav.home": "Inicio", "nav.search": "Buscar", "nav.library": "Biblioteca", "nav.timeline": "Cronología", "nav.map": "Mapa", "nav.collections": "Colecciones", "nav.uploads": "Subidas", "nav.settings": "Ajustes", "nav.signOut": "Cerrar sesión",
   "auth.signIn": "Iniciar sesión", "auth.create": "Crear cuenta", "auth.email": "Correo electrónico", "auth.password": "Contraseña", "auth.name": "Tu nombre", "auth.haveAccount": "¿Ya tienes cuenta?", "auth.noAccount": "¿Eres nuevo?", "auth.tagline": "Encuentra cualquier foto, vídeo o documento describiéndolo", "auth.passwordHint": "Al menos 8 caracteres",
   "home.title": "¿Qué estás buscando?", "home.placeholder": "Describe una foto, un vídeo o un documento", "home.onThisDay": "Un día como hoy", "home.recent": "Añadido recientemente", "home.saved": "Búsquedas guardadas", "home.try": "Prueba a preguntar",

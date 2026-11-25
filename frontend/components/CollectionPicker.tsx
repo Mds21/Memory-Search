@@ -1,7 +1,7 @@
 "use client";
 import { FolderPlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
@@ -12,7 +12,7 @@ export default function CollectionPicker({ ids, onClose, onDone }: { ids: string
   const { toast } = useUploads();
   const [items, setItems] = useState<Collection[] | null>(null);
   const [name, setName] = useState("");
-  useEffect(() => { if (ids) api.get<{ items: Collection[] }>("/collections").then((r) => setItems(r.items)).catch(() => setItems([])); }, [ids]);
+  useEffect(() => { if (ids) api.get<{ items: Collection[] }>("/collections").then((r) => setItems(r.items)).catch(emptyUnlessOffline(setItems)); }, [ids]);
   const add = async (cid: string) => { try { await api.post(`/collections/${cid}/items`, { asset_ids: ids }); toast(t("col.added")); onDone?.(); onClose(); } catch (e: any) { toast(e.message, "error"); } };
   const create = async () => { if (!name.trim()) return; const c = await api.post<Collection>("/collections", { name }); await add(c.id); };
   return (

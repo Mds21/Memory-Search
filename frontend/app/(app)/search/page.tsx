@@ -11,7 +11,7 @@ import { RecentChatsList, useChats } from "@/components/RecentChats";
 import SearchBar from "@/components/SearchBar";
 import { Empty, GridSkeleton, Spinner } from "@/components/ui";
 import { assetHref, useViewer } from "@/components/useViewer";
-import { api, chatStream } from "@/lib/api";
+import { api, chatStream, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Asset, Citation, Parsed } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
@@ -92,7 +92,7 @@ function SearchView() {
       const last = [...c.messages].reverse().find((m) => m.parsed_query)?.parsed_query || null;
       setParsed(last); setResults(null); setMeta(null);
       if (last) api.post<{ results: Asset[]; total: number; took_ms: number }>("/search", { parsed: last })
-        .then((r) => { setResults(r.results); setMeta({ total: r.total, took: r.took_ms }); }).catch(() => setResults([]));
+        .then((r) => { setResults(r.results); setMeta({ total: r.total, took: r.took_ms }); }).catch(emptyUnlessOffline(setResults));
       if (params.get("c") !== id) router.replace(`/search?c=${id}`, { scroll: false });
     } catch (e: any) { toast(e.message, "error"); }
   }, [params, router, toast]);

@@ -10,7 +10,7 @@ import RecentChats from "@/components/RecentChats";
 import SearchBar from "@/components/SearchBar";
 import { Empty, GridSkeleton } from "@/components/ui";
 import { useViewer } from "@/components/useViewer";
-import { api } from "@/lib/api";
+import { api, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Asset, SavedSearch } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
@@ -34,7 +34,7 @@ export default function Home() {
   const go = (v: string) => router.push(`/search?q=${encodeURIComponent(v)}`);
 
   useEffect(() => {
-    api.get<{ items: Asset[]; total: number }>("/assets?limit=12").then((r) => { setRecent(r.items); setTotal(r.total); }).catch(() => setRecent([]));
+    api.get<{ items: Asset[]; total: number }>("/assets?limit=12").then((r) => { setRecent(r.items); setTotal(r.total); }).catch(emptyUnlessOffline(setRecent));
   }, [tick]);
   useEffect(() => {
     api.get<{ items: SavedSearch[] }>("/saved-searches").then((r) => setSaved(r.items)).catch(() => {});

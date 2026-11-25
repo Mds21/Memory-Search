@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import MomentCard from "@/components/MomentCard";
 import { Empty } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Moment } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
@@ -21,7 +21,7 @@ export default function MomentsPage() {
   const { tick } = useUploads();
   const [items, setItems] = useState<Moment[] | null>(null);
   const [group, setGroup] = useState("");
-  useEffect(() => { api.get<{ items: Moment[] }>("/moments").then((r) => setItems(r.items)).catch(() => setItems([])); }, [tick]);
+  useEffect(() => { api.get<{ items: Moment[] }>("/moments").then((r) => setItems(r.items)).catch(emptyUnlessOffline(setItems)); }, [tick]);
 
   const groups = Object.entries(GROUPS).filter(([, types]) => items?.some((m) => types.includes(m.type)));
   const shown = (items || []).filter((m) => !group || GROUPS[group].includes(m.type));

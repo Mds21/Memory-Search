@@ -5,7 +5,7 @@ import AssetTile from "@/components/AssetTile";
 import CollectionPicker from "@/components/CollectionPicker";
 import { Empty, GridSkeleton, Spinner } from "@/components/ui";
 import { useViewer } from "@/components/useViewer";
-import { api } from "@/lib/api";
+import { api, emptyUnlessOffline } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import type { Asset } from "@/lib/types";
 import { useUploads } from "@/lib/uploads";
@@ -29,7 +29,7 @@ export default function Library() {
     if (kind) p.set("kind", kind); if (from) p.set("date_from", from); if (to) p.set("date_to", to); if (tag.trim()) p.set("tag", tag.trim().toLowerCase());
     return p.toString();
   }, [kind, from, to, tag]);
-  const load = useCallback(() => { api.get<{ items: Asset[]; total: number }>(`/assets?${qs(0)}`).then((r) => { setItems(r.items); setTotal(r.total); }).catch(() => setItems([])); }, [qs]);
+  const load = useCallback(() => { api.get<{ items: Asset[]; total: number }>(`/assets?${qs(0)}`).then((r) => { setItems(r.items); setTotal(r.total); }).catch(emptyUnlessOffline(setItems)); }, [qs]);
   useEffect(() => { setItems(null); const id = setTimeout(load, 200); return () => clearTimeout(id); }, [load]);
   useEffect(() => { if (items) load(); }, [tick]); // eslint-disable-line react-hooks/exhaustive-deps
   const loadMore = async () => { setMore(true); try { const r = await api.get<{ items: Asset[] }>(`/assets?${qs(items!.length)}`); setItems((x) => [...(x || []), ...r.items]); } finally { setMore(false); } };
