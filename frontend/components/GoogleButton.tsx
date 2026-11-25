@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { API } from "@/lib/api";
+import { API, server } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 
 declare global { interface Window { google?: any } }
@@ -44,7 +44,7 @@ export default function GoogleButton({ onCredential }: { onCredential: (credenti
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    fetch(`${API}/auth/providers`).then((r) => r.json()).then((d) => setClientId(d.google_client_id || null)).catch(() => setClientId(null));
+    fetch(`${API}/auth/providers`).then((r) => r.json()).then((d) => setClientId(d.google_client_id || null)).catch(() => { server.set(false); setClientId(null); });
   }, []);
 
   useEffect(() => {

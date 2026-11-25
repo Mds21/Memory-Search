@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { API, api, tokens } from "./api";
+import { API, api, tokens, server, UNREACHABLE } from "./api";
 import type { User } from "./types";
 import { useI18n } from "./i18n";
 
@@ -10,7 +10,9 @@ const Ctx = createContext<AuthCtx>(null as unknown as AuthCtx);
 async function authCall(path: string, body: object) {
   let res: Response;
   try { res = await fetch(`${API}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
-  catch { throw new Error(`Cannot reach the server at ${API}. Check that the backend is running and that CORS allows this site.`); }
+  catch { server.set(false); throw new Error("Can't reach your Memory Search server. Your files are safe; try again in a minute."); }
+  if (UNREACHABLE.has(res.status)) { server.set(false); throw new Error("Can't reach your Memory Search server. Your files are safe; try again in a minute."); }
+  server.set(true);
   const d = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detail = d.detail;
