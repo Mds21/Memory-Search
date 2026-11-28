@@ -1,0 +1,8 @@
+# HTTPS in front of the API. API_HOST is a name that points at this server, e.g. api-1-2-3-4.sslip.io for IP 1.2.3.4
+# (sslip.io maps such names to the IP inside them, so no domain purchase is needed). Caddy gets and renews the certificate.
+{$API_HOST} {
+	encode gzip
+	reverse_proxy backend:8000 {
+		flush_interval -1 # chat answers stream word by word (server-sent events)
+	}
+}

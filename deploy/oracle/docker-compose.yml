@@ -1,0 +1,39 @@
+# Production backend on one server: the API plus Caddy for HTTPS (free certificate, renewed automatically).
+# Lives in ~/memory-search on the server, next to backend/, Caddyfile, backend.env and data/. See README.md.
+services:
+  backend:
+    build: ./backend
+    env_file: ./backend.env              # GROQ_API_KEY, JWT_SECRET, GOOGLE_CLIENT_ID ... copied from the laptop
+    environment:                         # these win over backend.env (which may hold Windows paths)
+      DATA_DIR: /data
+      DATABASE_URL: sqlite:////data/smriti.db
+      HF_HOME: /data/hf
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    volumes:
+      - ./data:/data                     # database, files, thumbnails, model cache: everything that must persist
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_HOST: ${API_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - backend
+
+volumes:
+  caddy-data:
+  caddy-config:
