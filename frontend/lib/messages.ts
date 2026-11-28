@@ -5,6 +5,7 @@ export const LANGS = [
 ] as const;
 
 const en: Dict = {
+  "chat.title": "Chat", "nav.chat": "Chat", "nav.more": "More", "chat.hello": "Hello", "chat.intro": "Ask me anything about your photos, videos and documents, or just chat. I can find files, read what is in them and answer questions about your whole library.", "chat.placeholder": "Message Memory Search…", "chat.stop": "Stop", "chat.retry": "Try again", "chat.copy": "Copy", "chat.suggested": "Suggested follow-ups",
   "server.offline": "Can't reach your Memory Search server", "server.offlineHint": "Your files are safe. The computer running it may be asleep or offline, or the link is restarting. This page will reload when it's back.", "server.retry": "Retry",
   "nav.home": "Home", "nav.moments": "Moments", "nav.search": "Search", "nav.library": "Library", "nav.timeline": "Timeline", "nav.map": "Map",
   "nav.collections": "Collections", "nav.uploads": "Uploads", "nav.settings": "Settings", "nav.signOut": "Sign out",
@@ -25,7 +26,7 @@ const en: Dict = {
   "gs.step3": "Under Authorized JavaScript origins, add", "gs.step4": "Create it, then paste the Client ID below", "gs.open": "Open Google Cloud credentials",
   "gs.placeholder": "1234567890-abc.apps.googleusercontent.com", "gs.save": "Turn on", "gs.update": "Update", "gs.disable": "Turn off",
   "gs.saved": "Google sign-in is on", "gs.removed": "Google sign-in is off",
-  "home.title": "What are you looking for?", "home.placeholder": "Describe a photo, video or document",
+  "home.title": "Ask your memories anything", "home.placeholder": "Ask anything, or describe a photo or document",
   "home.onThisDay": "On this day", "home.recent": "Recently added", "home.saved": "Saved searches", "home.try": "Try asking",
   "home.emptyTitle": "Your library is empty", "home.emptyBody": "Upload photos, videos or documents and search them by meaning.", "home.upload": "Upload files",
   "search.placeholder": "Ask about your photos, videos and documents", "search.send": "Send", "search.voice": "Voice search arrives in the next release",
@@ -61,6 +62,7 @@ const en: Dict = {
 };
 
 const hi: Dict = {
+  "chat.title": "चैट", "nav.chat": "चैट", "nav.more": "और", "chat.hello": "नमस्ते", "chat.intro": "अपनी फ़ोटो, वीडियो और दस्तावेज़ों के बारे में कुछ भी पूछें, या बस बात करें। मैं फ़ाइलें ढूँढ सकता हूँ, उनमें लिखी बातें पढ़ सकता हूँ और आपकी पूरी लाइब्रेरी के बारे में बता सकता हूँ।", "chat.placeholder": "Memory Search को संदेश लिखें…", "chat.stop": "रोकें", "chat.retry": "फिर कोशिश करें", "chat.copy": "कॉपी करें", "chat.suggested": "सुझाए गए सवाल",
   "server.offline": "आपके Memory Search सर्वर तक नहीं पहुँच पा रहे", "server.offlineHint": "आपकी फ़ाइलें सुरक्षित हैं। सर्वर वाला कंप्यूटर बंद या ऑफ़लाइन हो सकता है। वापस आने पर यह पेज अपने-आप रीलोड होगा।", "server.retry": "फिर कोशिश करें",
   "nav.home": "होम", "nav.search": "खोज", "nav.library": "लाइब्रेरी", "nav.timeline": "समयरेखा", "nav.map": "नक्शा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्स", "nav.signOut": "साइन आउट",
   "auth.signIn": "साइन इन", "auth.create": "खाता बनाएँ", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "आपका नाम", "auth.haveAccount": "पहले से खाता है?", "auth.noAccount": "नए हैं?", "auth.tagline": "बताकर कोई भी फ़ोटो, वीडियो या दस्तावेज़ खोजें", "auth.passwordHint": "कम से कम 8 अक्षर",
@@ -80,6 +82,7 @@ const hi: Dict = {
 };
 
 const mr: Dict = {
+  "chat.title": "चॅट", "nav.chat": "चॅट", "nav.more": "अधिक", "chat.hello": "नमस्कार", "chat.intro": "तुमचे फोटो, व्हिडिओ आणि दस्तऐवजांबद्दल काहीही विचारा, किंवा फक्त गप्पा मारा.", "chat.placeholder": "Memory Search ला संदेश लिहा…", "chat.stop": "थांबवा", "chat.retry": "पुन्हा प्रयत्न करा", "chat.copy": "कॉपी करा", "chat.suggested": "सुचवलेले प्रश्न",
   "server.offline": "तुमच्या Memory Search सर्व्हरपर्यंत पोहोचता येत नाही", "server.offlineHint": "तुमच्या फाइल्स सुरक्षित आहेत. सर्व्हर असलेला संगणक बंद किंवा ऑफलाइन असू शकतो. तो परत आल्यावर हे पेज आपोआप रीलोड होईल.", "server.retry": "पुन्हा प्रयत्न करा",
   "nav.home": "मुख्यपृष्ठ", "nav.search": "शोध", "nav.library": "लायब्ररी", "nav.timeline": "कालरेषा", "nav.map": "नकाशा", "nav.collections": "संग्रह", "nav.uploads": "अपलोड", "nav.settings": "सेटिंग्ज", "nav.signOut": "साइन आउट",
   "auth.signIn": "साइन इन", "auth.create": "खाते तयार करा", "auth.email": "ईमेल", "auth.password": "पासवर्ड", "auth.name": "तुमचे नाव", "auth.haveAccount": "आधीच खाते आहे?", "auth.noAccount": "नवीन आहात?", "auth.tagline": "वर्णन करून कोणताही फोटो, व्हिडिओ किंवा दस्तऐवज शोधा",
@@ -93,6 +96,7 @@ const mr: Dict = {
 };
 
 const ta: Dict = {
+  "chat.title": "அரட்டை", "nav.chat": "அரட்டை", "nav.more": "மேலும்", "chat.hello": "வணக்கம்", "chat.intro": "உங்கள் புகைப்படங்கள், வீடியோக்கள், ஆவணங்கள் பற்றி எதையும் கேளுங்கள், அல்லது சும்மா பேசுங்கள்.", "chat.placeholder": "Memory Search-க்கு செய்தி…", "chat.stop": "நிறுத்து", "chat.retry": "மீண்டும் முயல்க", "chat.copy": "நகலெடு", "chat.suggested": "பரிந்துரைக்கப்பட்ட கேள்விகள்",
   "server.offline": "உங்கள் Memory Search சேவையகத்தை அணுக முடியவில்லை", "server.offlineHint": "உங்கள் கோப்புகள் பாதுகாப்பாக உள்ளன. சேவையகக் கணினி அணைக்கப்பட்டிருக்கலாம். அது திரும்பியதும் இந்தப் பக்கம் தானாக மீண்டும் ஏறும்.", "server.retry": "மீண்டும் முயல்க",
   "nav.home": "முகப்பு", "nav.search": "தேடல்", "nav.library": "நூலகம்", "nav.timeline": "காலவரிசை", "nav.map": "வரைபடம்", "nav.collections": "தொகுப்புகள்", "nav.uploads": "பதிவேற்றங்கள்", "nav.settings": "அமைப்புகள்", "nav.signOut": "வெளியேறு",
   "auth.signIn": "உள்நுழை", "auth.create": "கணக்கை உருவாக்கு", "auth.email": "மின்னஞ்சல்", "auth.password": "கடவுச்சொல்", "auth.name": "உங்கள் பெயர்", "auth.haveAccount": "ஏற்கனவே கணக்கு உள்ளதா?", "auth.noAccount": "புதியவரா?", "auth.tagline": "விவரித்துச் சொல்லி எந்தப் புகைப்படம், காணொளி, ஆவணத்தையும் கண்டறியுங்கள்",
@@ -106,6 +110,7 @@ const ta: Dict = {
 };
 
 const es: Dict = {
+  "chat.title": "Chat", "nav.chat": "Chat", "nav.more": "Más", "chat.hello": "Hola", "chat.intro": "Pregúntame lo que quieras sobre tus fotos, vídeos y documentos, o simplemente charla.", "chat.placeholder": "Escribe a Memory Search…", "chat.stop": "Detener", "chat.retry": "Reintentar", "chat.copy": "Copiar", "chat.suggested": "Preguntas sugeridas",
   "server.offline": "No se puede conectar con tu servidor de Memory Search", "server.offlineHint": "Tus archivos están a salvo. El ordenador que lo ejecuta puede estar apagado o sin conexión. La página se recargará cuando vuelva.", "server.retry": "Reintentar",
   "nav.home": "Inicio", "nav.search": "Buscar", "nav.library": "Biblioteca", "nav.timeline": "Cronología", "nav.map": "Mapa", "nav.collections": "Colecciones", "nav.uploads": "Subidas", "nav.settings": "Ajustes", "nav.signOut": "Cerrar sesión",
   "auth.signIn": "Iniciar sesión", "auth.create": "Crear cuenta", "auth.email": "Correo electrónico", "auth.password": "Contraseña", "auth.name": "Tu nombre", "auth.haveAccount": "¿Ya tienes cuenta?", "auth.noAccount": "¿Eres nuevo?", "auth.tagline": "Encuentra cualquier foto, vídeo o documento describiéndolo", "auth.passwordHint": "Al menos 8 caracteres",

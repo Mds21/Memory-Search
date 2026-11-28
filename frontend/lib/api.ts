@@ -120,7 +120,7 @@ export interface StreamHandlers {
   parsed?: (d: { parsed: Parsed; conversation_id: string }) => void;
   results?: (d: { results: any[]; total: number; took_ms: number }) => void;
   token?: (text: string) => void;
-  done?: (d: { message_id: string; conversation_id: string; citations: any[]; files?: Asset[] }) => void;
+  done?: (d: { message_id: string; conversation_id: string; citations: any[]; files?: Asset[]; suggestions?: string[] }) => void;
   error?: (message: string) => void;
 }
 

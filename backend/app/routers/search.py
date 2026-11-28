@@ -63,6 +63,25 @@ class ModelTimeout(Exception):
     pass
 
 
+def _with_earlier_files(db, uid: str, answers: list, out: SearchOutput) -> SearchOutput:
+    """The search output plus files shared in the last answers (flagged "earlier"), placed after the best new matches."""
+    ids: list[str] = []
+    for m in reversed(answers):
+        for c in m.citations or []:
+            if c.get("asset_id") and c["asset_id"] not in ids:
+                ids.append(c["asset_id"])
+    have = {c["asset_id"] for c in out.cards}
+    ids = [i for i in ids if i not in have][:6]
+    if not ids:
+        return out
+    assets = db.query(Asset).filter(Asset.owner_id == uid, Asset.id.in_(ids)).all()
+    tags = tags_for(db, [a.id for a in assets])
+    extra = [{**asset_card(a, tags.get(a.id)), "earlier": True, "snippet": ""} for a in sorted(assets, key=lambda a: ids.index(a.id))]
+    _attach_image_text(db, extra)
+    cards = out.cards[:4] + extra + out.cards[4:]
+    return SearchOutput(cards=cards, total=out.total, took_ms=out.took_ms, rag_chunks=out.rag_chunks)
+
+
 def _with_deadline(items, first_wait: float, next_wait: float = 120):
     """Runs a model stream in a thread and re-yields its items; raises ModelTimeout if the first item (or a later
     one) takes too long, so a slow or stuck local model never leaves the chat hanging."""
@@ -91,6 +110,12 @@ def _with_deadline(items, first_wait: float, next_wait: float = 120):
         yield val
 
 
+@router.get("/chat/starters")
+def chat_starters(user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """A few things worth asking, based on what is in this person's library."""
+    return {"items": library_stats.starters(db, user.id)}
+
+
 @router.post("/chat")
 def chat(body: ChatIn, user: User = Depends(current_user)):
     """One chat turn as an SSE stream: parsed -> results -> token* -> done (or error).
@@ -112,6 +137,7 @@ def chat(body: ChatIn, user: User = Depends(current_user)):
                 db.flush()
             earlier = db.query(Message).filter_by(conversation_id=conv.id).order_by(Message.created_at).all()
             history = history_messages(earlier)
+            last_answers = [m for m in earlier if m.role == "assistant"][-2:]  # their shared files stay in context
             prev = next((m.parsed_query for m in reversed(earlier) if m.role == "assistant" and m.parsed_query), None)
             db.add(Message(conversation_id=conv.id, role="user", content=body.message, input_mode=body.input_mode, language=body.ui_language))
             conv.updated_at = datetime.now(timezone.utc)  # recent chats are ordered by last activity
@@ -136,17 +162,22 @@ def chat(body: ChatIn, user: User = Depends(current_user)):
                 out = run_search(db, uid, pq, limit=30)
                 _attach_image_text(db, out.cards[:10])
                 yield _sse("results", {"results": out.cards, "total": out.total, "took_ms": out.took_ms})
+            # The model also sees the files it showed in the last turns, so "when was it taken?" or "open the second
+            # one" work even when this message's own search doesn't return them.
+            talk_out = _with_earlier_files(db, uid, last_answers, out)
 
-            text, cites, model_replied = [], [], False
+            text, cites, follow, model_replied = [], [], [], False
             if can_chat:
                 try:
-                    reply = converse(llm, message=body.message, history=history, out=out, who=who, total_files=total_files,
+                    reply = converse(llm, message=body.message, history=history, out=talk_out, who=who, total_files=total_files,
                                      reveal_ids=smalltalk.asks_for_number(body.message), small_talk=bool(talk),
                                      overview=library_stats.overview(db, uid))
                     for kind, val in _with_deadline(reply, FIRST_TOKEN_SECONDS):
                         if kind == "token":
                             text.append(val)
                             yield _sse("token", {"text": val})
+                        elif kind == "followups":
+                            follow = val
                         else:
                             cites = val
                     model_replied = bool(text)
@@ -167,7 +198,7 @@ def chat(body: ChatIn, user: User = Depends(current_user)):
                         text = [summary_line(out, lang)]
                         yield _sse("token", {"text": text[0]})
 
-            by_id = {c["asset_id"]: c for c in out.cards}
+            by_id = {c["asset_id"]: c for c in talk_out.cards}
             files = [by_id[i] for i in shared_files(cites) if i in by_id]
             if not files and not talk and not model_replied:  # offline answer: still show the best matches
                 files = out.cards[:6]
@@ -177,7 +208,8 @@ def chat(body: ChatIn, user: User = Depends(current_user)):
                         parsed_query=pq.as_dict() if pq else None, result_asset_ids=[c["asset_id"] for c in out.cards], citations=cites)
             db.add(m)
             db.commit()
-            yield _sse("done", {"message_id": m.id, "conversation_id": conv.id, "citations": cites, "files": files})
+            yield _sse("done", {"message_id": m.id, "conversation_id": conv.id, "citations": cites, "files": files,
+                                "suggestions": follow})
         except Exception as e:  # noqa: BLE001
             yield _sse("error", {"message": f"{type(e).__name__}: {e}"})
         finally:

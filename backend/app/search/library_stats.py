@@ -61,3 +61,36 @@ def overview(db: Session, owner_id: str, *, limit: int = 20000) -> str:
     if failed:
         lines.append(f"{_n(failed, 'file', 'files')} could not be processed.")
     return "\n".join(lines)
+
+
+def starters(db: Session, owner_id: str, *, limit: int = 6) -> list[str]:
+    """Conversation starters that fit this library: its documents, what its pictures show, places and years."""
+    from ..understanding.clip_labels import LABELS
+    rows = db.query(Asset.kind, Asset.taken_at, Asset.created_at, Asset.place_name, Asset.meta).filter(Asset.owner_id == owner_id).limit(5000).all()
+    if not rows:
+        return ["What can you do?", "How do I add my photos?", "What kinds of files can I upload?"]
+    docs, labels, places, years, kinds = Counter(), Counter(), Counter(), Counter(), Counter()
+    for kind, taken, created, place, meta in rows:
+        m = meta or {}
+        kinds[kind] += 1
+        if m.get("doc_label") and m["doc_label"] != "Signature":
+            docs[m["doc_label"]] += 1
+        for k in m.get("labels") or []:
+            if k in LABELS and k not in ("document", "id_card", "screenshot", "receipt", "qr_code", "chart", "handwriting"):
+                labels[k] += 1
+        if place:
+            places[place.split(",")[0].strip()] += 1
+        if taken or created:
+            years[(taken or created).year] += 1
+    out: list[str] = []
+    out += [f"Show my {d}" for d, _ in docs.most_common(2)]
+    out += [f"{LABELS[k][2]} photos" if k != "signature" else "Share my signature" for k, _ in labels.most_common(2)]
+    out += [f"Photos from {p}" for p, _ in places.most_common(1)]
+    if kinds["photo"]:
+        out.append("How many photos do I have?")
+    if len(years) > 1:
+        out.append(f"What did I save in {max(years)}?")
+    if sum(docs.values()) > 1:
+        out.append("Which documents have I saved?")
+    out.append("What can you do?")
+    return list(dict.fromkeys(out))[:limit]

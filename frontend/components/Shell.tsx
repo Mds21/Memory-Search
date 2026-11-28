@@ -1,5 +1,5 @@
 "use client";
-import { LogOut, Menu, Search, Settings, UploadCloud, X } from "lucide-react";
+import { House, Images, LayoutGrid, LogOut, Menu, MessageCircle, Settings, UploadCloud, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,9 +12,15 @@ import ThemeButton from "./ThemeButton";
 import { Spinner } from "./ui";
 
 const NAV = [
-  { href: "/", key: "nav.home" }, { href: "/moments", key: "nav.moments" }, { href: "/search", key: "nav.search" }, { href: "/library", key: "nav.library" },
+  { href: "/", key: "nav.home" }, { href: "/moments", key: "nav.moments" }, { href: "/search", key: "nav.chat" }, { href: "/library", key: "nav.library" },
   { href: "/timeline", key: "nav.timeline" }, { href: "/map", key: "nav.map" },
   { href: "/collections", key: "nav.collections" }, { href: "/uploads", key: "nav.uploads" },
+];
+/** Phones: the five places people go most, always one tap away at the bottom of the screen. */
+const TABS = [
+  { href: "/", key: "nav.home", Icon: House }, { href: "/moments", key: "nav.moments", Icon: Images },
+  { href: "/search", key: "nav.chat", Icon: MessageCircle }, { href: "/library", key: "nav.library", Icon: LayoutGrid },
+  { href: "/uploads", key: "nav.uploads", Icon: UploadCloud },
 ];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -66,7 +72,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="ml-auto flex items-center gap-1 lg:ml-2 lg:border-l lg:border-paper-line lg:pl-4">
-            <Link href="/search" className="btn-ghost !h-9 !w-9 !p-0 lg:hidden" aria-label={t("nav.search")}><Search className="h-4 w-4" strokeWidth={1.5} /></Link>
             <ThemeButton />
             <Link href="/settings" className={`btn-ghost !h-9 !w-9 !p-0 ${active("/settings") ? "!text-ink" : ""}`} aria-label={t("nav.settings")} title={`${user.display_name || ""} · ${user.email}`}><Settings className="h-4 w-4" strokeWidth={1.5} /></Link>
             <button onClick={logout} className="btn-ghost hidden !h-9 !w-9 !p-0 lg:inline-flex" aria-label={t("nav.signOut")} title={t("nav.signOut")}><LogOut className="h-4 w-4" strokeWidth={1.5} /></button>
@@ -91,9 +96,25 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </div>
         </div>)}
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</main>
 
-      <footer className="border-t border-paper-line/70">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-paper-line/70 bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Main">
+        <div className="mx-auto grid h-16 max-w-md grid-cols-5">
+          {TABS.map(({ href, key, Icon }) => {
+            const on = active(href);
+            return (
+              <Link key={href} href={href} aria-current={on ? "page" : undefined}
+                className={`relative flex flex-col items-center justify-center gap-1 text-[10px] font-medium uppercase tracking-[0.08em] transition-colors ${on ? "text-ink" : "text-ink-mute active:text-ink"}`}>
+                <span className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${on ? "bg-tide-soft text-tide" : ""}`}>
+                  <Icon className="h-[19px] w-[19px]" strokeWidth={on ? 2 : 1.6} /></span>
+                {t(key)}
+                {href === "/uploads" && busy > 0 && <span className="absolute right-3 top-1.5 min-w-[1.1rem] rounded-full bg-tide px-1 text-center text-[10px] tabular-nums text-night">{busy}</span>}
+              </Link>);
+          })}
+        </div>
+      </nav>
+
+      <footer className={`hidden border-t border-paper-line/70 ${path.startsWith("/search") ? "" : "lg:block"}`}>
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-5 sm:px-8">
           <p className="text-[11px] uppercase tracking-label text-ink-mute">© Smriti <span className="px-1.5 text-ink-faint">/</span> your files stay on your own server</p>
           <LanguageSwitcher />
@@ -105,7 +126,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <div className="rounded border border-dashed border-white/40 px-14 py-12 text-center"><UploadCloud className="mx-auto h-8 w-8" strokeWidth={1.25} /><p className="mt-4 text-lg font-light uppercase tracking-display">{t("up.drop")}</p></div>
         </div>)}
 
-      <div className="pointer-events-none fixed bottom-6 right-4 z-[60] flex flex-col gap-2" aria-live="polite">
+      <div className="pointer-events-none fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-[60] flex flex-col gap-2 lg:bottom-6" aria-live="polite">
         {toasts.map((x) => (<div key={x.id} className={`pointer-events-auto max-w-sm animate-rise rounded px-4 py-3 text-[13px] shadow-lift ${x.kind === "error" ? "bg-danger text-white" : "bg-night text-white"}`}>{x.msg}</div>))}
       </div>
     </div>

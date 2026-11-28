@@ -36,7 +36,7 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder, auto
         <input ref={ref} value={value} onChange={(e) => { onChange(e.target.value); setOpen(true); }} onFocus={() => value && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 120)}
           onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); setHi((h) => Math.min(h + 1, sugs.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setHi((h) => Math.max(h - 1, -1)); } else if (e.key === "Escape") setOpen(false); }}
           placeholder={placeholder || t("search.placeholder")} aria-label={t("nav.search")} role="combobox" aria-expanded={open && sugs.length > 0} aria-autocomplete="list"
-          style={{ outline: "none", boxShadow: "none" }} className={`min-w-0 flex-1 bg-transparent placeholder:text-ink-faint ${large ? "text-[15px]" : "text-[13px]"}`} />
+          style={{ outline: "none", boxShadow: "none" }} className={`min-w-0 flex-1 bg-transparent text-base placeholder:text-ink-faint ${large ? "sm:text-[15px]" : "sm:text-[13px]"}`} />
         <button type="button" disabled title={t("search.voice")} aria-label={t("search.voice")} className="btn-ghost !h-9 !w-9 !p-0 opacity-50"><Mic className="h-4 w-4" strokeWidth={1.75} /></button>
         <button className={`btn-primary !p-0 !tracking-normal ${large ? "!h-10 !w-10" : "!h-8 !w-8"}`} disabled={!value.trim() || busy} aria-label={t("search.send")}><Send className="h-4 w-4" strokeWidth={1.75} /></button>
       </form>

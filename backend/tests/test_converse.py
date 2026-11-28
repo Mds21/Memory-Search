@@ -56,17 +56,17 @@ def run(reply, **kw):
 def test_reply_streams_and_cites_only_what_it_used():
     ev = run("The deposit is Rs 75,000 [S1].")
     assert "".join(v for k, v in ev if k == "token") == "The deposit is Rs 75,000 [S1]."
-    assert [c["asset_id"] for c in ev[-1][1]] == ["a1"]
+    assert [c["asset_id"] for c in dict(ev)["cites"]] == ["a1"]
 
 
 def test_no_citation_means_no_files():
-    assert run("I couldn't find a passport in your library.")[-1] == ("cites", [])
+    assert dict(run("I couldn't find a passport in your library."))["cites"] == []
 
 
 def test_old_routing_tags_and_odd_brackets_are_cleaned():
     ev = run("<<FILES>>\nHere it is 【S1】")
     text = "".join(v for k, v in ev if k == "token")
-    assert text == "Here it is [S1]" and ev[-1][1][0]["label"] == "S1"
+    assert text == "Here it is [S1]" and dict(ev)["cites"][0]["label"] == "S1"
     assert CITE.findall("a [ S2 ] b [​S3]".translate(FULLWIDTH)) == ["2", "3"]
 
 
@@ -148,7 +148,7 @@ def test_small_talk_gets_no_file_context():
     history = [{"role": "user", "content": "any robot photos?"}, {"role": "assistant", "content": "I found a robot photo [S1]."}]
     ev = list(converse(llm, message="hi", history=history, out=Out(), who="Asha", total_files=3, small_talk=True))
     sent = llm.seen[0][-1]["content"]
-    assert "<file_sources>" not in sent and "no search was run" in sent and ev[-1] == ("cites", [])
+    assert "<file_sources>" not in sent and "no search was run" in sent and dict(ev)["cites"] == []
 
 
 def test_chat_files_can_be_viewed_and_downloaded(client, alice, library, fake_llm):
@@ -222,3 +222,10 @@ def test_text_read_from_a_photo_reaches_the_model():
     out = Out(cards=[{"asset_id": "logo", "kind": "photo", "title": "logo.png", "ocr_text": "STAR ART WORKS INTERIOR CIVIL CONTRACTOR"}])
     ctx, _ = build_sources(out)
     assert "text in the image: STAR ART WORKS INTERIOR CIVIL CONTRACTOR" in ctx
+
+
+def test_follow_ups_are_split_off_and_never_shown():
+    ev = run("The deposit is Rs 75,000 [S1].\n**FOLLOW-UPS:** when does it end? | download the agreement")
+    assert "".join(v for k, v in ev if k == "token") == "The deposit is Rs 75,000 [S1]."
+    assert dict(ev)["followups"] == ["when does it end?", "download the agreement"]
+    assert [c["asset_id"] for c in dict(ev)["cites"]] == ["a1"]

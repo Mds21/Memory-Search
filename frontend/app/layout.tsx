@@ -9,7 +9,7 @@ import { themeScript } from "@/lib/theme";
 
 export const metadata: Metadata = { title: "Smriti: search your memories and documents", description: "Find any photo, video or document by describing it." };
 export const viewport: Viewport = {
-  width: "device-width", initialScale: 1,
+  width: "device-width", initialScale: 1, viewportFit: "cover", // phones: draw under the notch/home bar; padding keeps content clear
   themeColor: "#0e0e0e",
 };
 

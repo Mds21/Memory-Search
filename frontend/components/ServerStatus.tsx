@@ -35,7 +35,7 @@ export default function ServerStatus() {
   if (online) return null;
   return (
     <div role="status" aria-live="polite"
-      className="fixed inset-x-3 bottom-3 z-[60] mx-auto flex max-w-xl items-start gap-3 rounded border border-paper-line bg-paper-card px-4 py-3 text-[13px] text-ink shadow-lift sm:bottom-5">
+      className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-[60] lg:bottom-5 mx-auto flex max-w-xl items-start gap-3 rounded border border-paper-line bg-paper-card px-4 py-3 text-[13px] text-ink shadow-lift">
       <CloudOff className="mt-0.5 h-4 w-4 shrink-0 text-tide" strokeWidth={1.75} />
       <div className="min-w-0 flex-1">
         <p className="font-medium">{t("server.offline")}</p>

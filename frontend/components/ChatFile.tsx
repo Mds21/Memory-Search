@@ -21,7 +21,7 @@ export default function ChatFile({ asset: a, label, onView }: { asset: Asset; la
         {label && <span className="absolute left-1 top-1 rounded-sm bg-night/75 px-1 font-mono text-[10px] text-[#d8b65a]">{label}</span>}
       </button>
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 truncate text-[13px] font-medium"><Kind className="h-3.5 w-3.5 shrink-0 text-ink-mute" strokeWidth={1.5} /><span className="truncate" title={a.title}>{nameOf(a)}</span></p>
+        <p className="flex items-start gap-1.5 text-[13px] font-medium leading-snug"><Kind className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-mute" strokeWidth={1.5} /><span className="line-clamp-2 break-words" title={a.title}>{nameOf(a)}</span></p>
         {meta && <p className="mt-0.5 truncate text-[11px] uppercase tracking-[0.06em] text-ink-mute">{meta}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-1">
