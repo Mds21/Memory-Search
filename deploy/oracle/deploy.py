@@ -12,6 +12,7 @@ Run it again after code changes: it updates the code and keeps the server's libr
 from __future__ import annotations
 
 import argparse
+import io
 import shutil
 import sqlite3
 import subprocess
@@ -51,7 +52,10 @@ def pack_code(out: Path) -> None:
             return None if any(p in CODE_SKIP or p.startswith("up_") for p in parts) or ti.name.endswith(".pyc") else ti
         tar.add(BACKEND, arcname="backend", filter=skip)
         for name in ("docker-compose.yml", "Caddyfile", "setup-server.sh"):
-            tar.add(HERE / name, arcname=name)
+            data = (HERE / name).read_bytes().replace(b"\r\n", b"\n")  # Windows checkouts may use CRLF; bash can't
+            ti = tarfile.TarInfo(name)
+            ti.size, ti.mode, ti.mtime = len(data), 0o755 if name.endswith(".sh") else 0o644, int(time.time())
+            tar.addfile(ti, io.BytesIO(data))
 
 
 def pack_data(out: Path) -> None:
