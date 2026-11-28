@@ -60,5 +60,18 @@ def test_admin_google_setting(client, alice, bob, monkeypatch):
     assert client.put(f"{API}/admin/settings/google", headers=bob, json={"client_id": CID}).status_code == 403
     assert client.put(f"{API}/admin/settings/google", headers=alice, json={"client_id": "nope"}).status_code == 422
     r = client.put(f"{API}/admin/settings/google", headers=alice, json={"client_id": CID})
-    assert r.json() == {"client_id": CID, "source": "app"}
+    assert r.json() == {"client_id": CID, "source": "app", "enabled": True}
     client.put(f"{API}/admin/settings/google", headers=alice, json={"client_id": ""})
+
+
+def test_admin_can_pause_and_resume_google(client, alice, bob, google_on):
+    assert client.get(f"{API}/admin/settings/google", headers=alice).json()["enabled"] is True  # on by default
+    assert client.put(f"{API}/admin/settings/google/enabled", headers=bob, json={"enabled": False}).status_code == 403
+    r = client.put(f"{API}/admin/settings/google/enabled", headers=alice, json={"enabled": False})
+    assert r.status_code == 200 and r.json()["enabled"] is False and r.json()["client_id"] == CID
+    p = client.get(f"{API}/auth/providers").json()
+    assert p["google_ready"] is False and p["google_client_id"] is None
+    assert client.post(f"{API}/auth/google", json={"credential": token(sub="g-2002", email="paused@example.com")}).status_code == 403
+    client.put(f"{API}/admin/settings/google/enabled", headers=alice, json={"enabled": True})
+    assert client.get(f"{API}/auth/providers").json()["google_ready"] is True
+    assert client.post(f"{API}/auth/google", json={"credential": token(sub="g-2002", email="paused@example.com")}).status_code == 200

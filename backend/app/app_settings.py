@@ -66,3 +66,8 @@ def google_source() -> str | None:
     if _env_value("GOOGLE_CLIENT_ID"):
         return "env"
     return "app" if load().get("google_client_id") else None
+
+
+def google_enabled() -> bool:
+    """Google sign-in is on by default; the admin can pause it from Settings without removing the Client ID."""
+    return load().get("google_enabled", True) is not False

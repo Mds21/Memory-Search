@@ -113,7 +113,7 @@ _warned = {"login": False}
 
 def run(args: list[str], cwd: Path, *, input: str | None = None, timeout: int = 900) -> bool:
     token = vercel_token()
-    r = subprocess.run([npx(), "--yes", "vercel@latest", *args, *(["--token", token] if token else [])], cwd=cwd, input=input,
+    r = subprocess.run([npx(), "--yes", "vercel@latest", *args, *(["--token", token] if token else [])], cwd=cwd, input=input or "",  # closed stdin: never wait on a prompt
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     if r.returncode != 0:
         out = (r.stderr or r.stdout)

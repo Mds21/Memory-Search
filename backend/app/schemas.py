@@ -79,3 +79,7 @@ class GoogleIn(BaseModel):
 
 class GoogleSettingIn(BaseModel):
     client_id: str = Field(default="", max_length=200)
+
+
+class GoogleEnabledIn(BaseModel):
+    enabled: bool

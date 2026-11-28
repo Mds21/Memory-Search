@@ -13,7 +13,7 @@ from .. import app_settings, google_auth
 from ..adapters import registry
 from ..db import get_db
 from ..models import Asset, AssetTag, Collection, Conversation, Tag, User
-from ..schemas import GoogleIn, GoogleSettingIn, LoginIn, ProfilePatch, RefreshIn, RegisterIn
+from ..schemas import GoogleIn, GoogleSettingIn, GoogleEnabledIn, LoginIn, ProfilePatch, RefreshIn, RegisterIn
 from ..security import admin_user, current_user, decode, hash_password, make_tokens, verify_password
 
 router = APIRouter(tags=["auth"])
@@ -47,7 +47,7 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
 @router.get("/auth/providers")
 def providers():
     """What the sign-in page can offer. The Google client id is public by design (it ships in every Google button)."""
-    cid = app_settings.google_client_id() or None
+    cid = (app_settings.google_client_id() or None) if app_settings.google_enabled() else None  # paused: no button
     return {"password": True, "google_client_id": cid, "google_ready": bool(cid), "password_reset": False}
 
 
@@ -57,6 +57,8 @@ def google_sign_in(body: GoogleIn, db: Session = Depends(get_db)):
     client_id = app_settings.google_client_id()
     if not client_id:
         raise HTTPException(400, "Google sign-in is not set up on this server")
+    if not app_settings.google_enabled():
+        raise HTTPException(403, "Google sign-in is paused on this server. Sign in with your email and password.")
     claims = google_auth.verify(body.credential, client_id)
     sub, email = claims["sub"], claims["email"].strip().lower()
     u = db.query(User).filter(User.google_sub == sub).first() or db.query(User).filter(func.lower(User.email) == email).first()
@@ -74,7 +76,19 @@ def google_sign_in(body: GoogleIn, db: Session = Depends(get_db)):
 
 @router.get("/admin/settings/google")
 def get_google_setting(_: User = Depends(admin_user)):
-    return {"client_id": app_settings.google_client_id() or None, "source": app_settings.google_source()}
+    return _google_state()
+
+
+def _google_state() -> dict:
+    return {"client_id": app_settings.google_client_id() or None, "source": app_settings.google_source(),
+            "enabled": app_settings.google_enabled()}
+
+
+@router.put("/admin/settings/google/enabled")
+def set_google_enabled(body: GoogleEnabledIn, _: User = Depends(admin_user)):
+    """Pause or resume Google sign-in (on by default). Accounts and the Client ID are kept either way."""
+    app_settings.save(google_enabled=bool(body.enabled))
+    return _google_state()
 
 
 @router.put("/admin/settings/google")
@@ -85,7 +99,7 @@ def put_google_setting(body: GoogleSettingIn, _: User = Depends(admin_user)):
     if cid and not app_settings.GOOGLE_ID_RE.match(cid):
         raise HTTPException(422, "That does not look like a Google Client ID. It ends in .apps.googleusercontent.com")
     app_settings.save(google_client_id=cid or None)
-    return {"client_id": app_settings.google_client_id() or None, "source": app_settings.google_source()}
+    return _google_state()
 
 
 @router.post("/auth/refresh")

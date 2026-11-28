@@ -12,11 +12,12 @@ import { Spinner } from "./ui";
 export default function GoogleSetup() {
   const { t } = useI18n();
   const { toast } = useUploads();
-  const { data, reload } = useApi<{ client_id: string | null; source: "env" | "app" | null }>("/admin/settings/google");
+  const { data, reload } = useApi<{ client_id: string | null; source: "env" | "app" | null; enabled: boolean }>("/admin/settings/google");
   const [cid, setCid] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => { setCid(data?.client_id || ""); }, [data?.client_id]);
-  const on = !!data?.client_id;
+  const configured = !!data?.client_id;
+  const on = configured && data?.enabled !== false;
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   const save = async (value: string) => {
@@ -25,12 +26,24 @@ export default function GoogleSetup() {
     catch (e: any) { toast(e.message, "error"); } finally { setBusy(false); }
   };
 
+  const setEnabled = async (enabled: boolean) => {
+    setBusy(true);
+    try { await api.put("/admin/settings/google/enabled", { enabled }); toast(enabled ? t("gs.resumed") : t("gs.pausedToast")); reload(); }
+    catch (e: any) { toast(e.message, "error"); } finally { setBusy(false); }
+  };
+
   return (
     <section className="card space-y-5 p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-label"><GoogleG size={16} />{t("gs.title")}</h2>
-        {data && <span className={`flex items-center gap-1.5 text-xs ${on ? "text-ok" : "text-ink-mute"}`}><span className={`h-1.5 w-1.5 ${on ? "bg-ok" : "bg-ink-faint"}`} />{on ? t("gs.on") : t("gs.off")}</span>}
+        {data && <span className={`flex items-center gap-1.5 text-xs ${on ? "text-ok" : "text-ink-mute"}`}><span className={`h-1.5 w-1.5 ${on ? "bg-ok" : "bg-ink-faint"}`} />{on ? t("gs.on") : configured ? t("gs.paused") : t("gs.off")}</span>}
       </div>
+      {configured && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded border border-paper-line bg-paper-sunk/60 px-4 py-3">
+          <p className="min-w-0 flex-1 text-sm text-ink-soft">{on ? t("gs.onNote") : t("gs.pausedNote")}</p>
+          <button type="button" role="switch" aria-checked={on} disabled={busy} onClick={() => setEnabled(!on)} className={on ? "btn-outline shrink-0" : "btn-primary shrink-0"}>
+            {busy && <Spinner />}{on ? t("gs.pause") : t("gs.resume")}</button>
+        </div>)}
       <p className="text-sm text-ink-soft">{t("gs.intro")}</p>
       {on && (
         <details className="rounded border border-paper-line bg-paper-sunk/60 p-3 text-sm">
